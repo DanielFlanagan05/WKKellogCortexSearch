@@ -1,5 +1,5 @@
 streamlit
-snowflake-connector-python
+snowflake-connector-python 
 snowflake-snowpark-python
 snowflake-ml-python
 pandas

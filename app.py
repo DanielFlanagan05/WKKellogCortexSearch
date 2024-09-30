@@ -1,6 +1,6 @@
 import streamlit as st  # Import python packages
 from snowflake.snowpark import Session
-# from snowflake.core import Root
+from snowflake.core import Root
 from snowflake.cortex import Complete
 from snowflake.snowpark.functions import col
 import pandas as pd
@@ -184,10 +184,9 @@ def run_sql_script():
 # Run the SQL setup
 run_sql_script()
 
-# root = Root(session) 
+root = Root(session) 
 
-# svc = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
-svc = session.sql(f"SELECT * FROM {CORTEX_SEARCH_DATABASE}.{CORTEX_SEARCH_SCHEMA}.cortex_search_services WHERE service_name = '{CORTEX_SEARCH_SERVICE}'").collect()
+svc = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 
 ### Functions
 
