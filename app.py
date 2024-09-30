@@ -29,10 +29,12 @@ def create_snowflake_session():
         "account": st.secrets["snowflake"]["account"],
         "user": st.secrets["snowflake"]["user"],
         "password": st.secrets["snowflake"]["password"],
-        "role": st.secrets["snowflake"]["role"],
-        "warehouse": st.secrets["snowflake"]["warehouse"],
-        "database": st.secrets["snowflake"]["database"],
-        "schema": st.secrets["snowflake"]["schema"]
+        "authenticator": st.secrets["snowflake"]["authenticator"],
+
+        # "role": st.secrets["snowflake"]["role"],
+        # "warehouse": st.secrets["snowflake"]["warehouse"],
+        # "database": st.secrets["snowflake"]["database"],
+        # "schema": st.secrets["snowflake"]["schema"]
     }
     # Creating Snowpark session
     session = Session.builder.configs(connection_parameters).create()
