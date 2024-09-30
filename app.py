@@ -31,16 +31,86 @@ def create_snowflake_session():
         "password": st.secrets["snowflake"]["password"],
         "authenticator": st.secrets["snowflake"]["authenticator"],
 
-        # "role": st.secrets["snowflake"]["role"],
-        # "warehouse": st.secrets["snowflake"]["warehouse"],
-        # "database": st.secrets["snowflake"]["database"],
-        # "schema": st.secrets["snowflake"]["schema"]
+        # Uncomment if you need these specific settings
+        "role": st.secrets.get("snowflake", {}).get("role", None),
+        "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
+        "database": st.secrets.get("snowflake", {}).get("database", None),
+        "schema": st.secrets.get("snowflake", {}).get("schema", None)
     }
     # Creating Snowpark session
     session = Session.builder.configs(connection_parameters).create()
     return session
 
 session = create_snowflake_session()
+
+# SQL script to create stage, tables, and functions
+sql_script = """
+CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
+CREATE SCHEMA IF NOT EXISTS DATA;
+
+CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
+RETURNS TABLE (chunk VARCHAR)
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.9'
+HANDLER = 'pdf_text_chunker'
+PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
+AS
+$$
+from snowflake.snowpark.types import StringType, StructField, StructType
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from snowflake.snowpark.files import SnowflakeFile
+import PyPDF2, io
+import logging
+import pandas as pd
+
+class pdf_text_chunker:
+    def read_pdf(self, file_url: str) -> str:
+        logger = logging.getLogger("udf_logger")
+        logger.info(f"Opening file {file_url}")
+        with SnowflakeFile.open(file_url, 'rb') as f:
+            buffer = io.BytesIO(f.readall())
+        reader = PyPDF2.PdfReader(buffer)
+        text = ""
+        for page in reader.pages:
+            try:
+                text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
+            except:
+                text = "Unable to Extract"
+                logger.warn(f"Unable to extract from file {file_url}, page {page}")
+        return text
+
+    def process(self, file_url: str):
+        text = self.read_pdf(file_url)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size = 1512, chunk_overlap  = 256, length_function = len
+        )
+        chunks = text_splitter.split_text(text)
+        df = pd.DataFrame(chunks, columns=['chunks'])
+        yield from df.itertuples(index=False, name=None)
+$$;
+
+CREATE OR REPLACE STAGE IF NOT EXISTS docs ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE') DIRECTORY = (ENABLE = TRUE);
+
+CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
+    RELATIVE_PATH VARCHAR(16777216),
+    SIZE NUMBER(38,0),
+    FILE_URL VARCHAR(16777216),
+    SCOPED_FILE_URL VARCHAR(16777216),
+    CHUNK VARCHAR(16777216),
+    CATEGORY VARCHAR(16777216)
+);
+"""
+
+# Run the SQL script when the app starts
+def run_sql_script():
+    sql_commands = sql_script.strip().split(";")
+    for command in sql_commands:
+        if command.strip():
+            session.sql(command.strip()).collect()
+
+# Run the SQL setup
+run_sql_script()
+
 root = Root(session)  # Pass the session to Root
 
 svc = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
@@ -160,16 +230,23 @@ def answer_question(myquestion):
     return response, relative_paths
 
 def main():
-    st.title(f":speech_balloon: Chat Document Assistant with Snowflake Cortex")
-    st.write("This is the list of documents you already have and that will be used to answer your questions:")
-    docs_available = session.sql("ls @docs").collect()
-    list_docs = []
-    for doc in docs_available:
-        list_docs.append(doc["name"])
+    st.title(":speech_balloon: Chat Document Assistant with Snowflake Cortex")
+
+    # Querying the docs_chunks_table instead of ls @docs
+    docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
+    list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
+    
+    st.write("Available Documents:")
     st.dataframe(list_docs)
 
     config_options()
     init_messages()
+
+    # Further logic for chat input and response...
+
+if __name__ == "__main__":
+    main()
+
 
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
