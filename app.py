@@ -1,7 +1,6 @@
 import streamlit as st  # Import python packages
 from snowflake.snowpark import Session
 from snowflake.core import Root
-from snowflake.cortex import Complete  
 import pandas as pd
 import json
 
@@ -248,20 +247,38 @@ def summarize_question_with_history(chat_history, question):
         {question}
         </question>
     """
-
     try:
-        summary = Complete(st.session_state.model_name, prompt)
+        # Execute the SNOWFLAKE.CORTEX.COMPLETE function via SQL
+        model = st.session_state.model_name
+        query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{prompt}') as response"
+        response_row = session.sql(query).collect()[0]  # Get the first result
+        response = response_row["RESPONSE"]
 
         if st.session_state.debug:
             st.sidebar.text("Summary to be used to find similar chunks in the docs:")
-            st.sidebar.caption(summary)
+            st.sidebar.caption(response)
 
-        summary = summary.replace("'", "")
-        return summary
+        return response
 
     except Exception as e:
-        st.error(f"Error generating response with Complete function: {e}")
+        st.error(f"Error generating response with SNOWFLAKE.CORTEX.COMPLETE function: {e}")
         return ""
+
+
+def answer_question(myquestion):
+    prompt, relative_paths = create_prompt(myquestion)
+    
+    try:
+        # Execute the SNOWFLAKE.CORTEX.COMPLETE function via SQL
+        model = st.session_state.model_name
+        query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{prompt}') as response"
+        response_row = session.sql(query).collect()[0]  # Get the first result
+        response = response_row["RESPONSE"]
+
+        return response, relative_paths
+    except Exception as e:
+        st.error(f"Error generating answer with SNOWFLAKE.CORTEX.COMPLETE function: {e}")
+        return "", relative_paths
 
 
 def create_prompt(myquestion):
@@ -310,59 +327,57 @@ def answer_question(myquestion):
 def main():
     st.title(":speech_balloon: Chat Document Assistant with Snowflake Cortex")
 
-    try:
-        # Ensure the session is connected to the correct database and schema
-        session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
-        session.sql("USE SCHEMA DATA").collect()
+    # Querying the docs_chunks_table instead of ls @docs
+    
+    docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
+    list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
+    
+    st.write("Available Documents:")
+    st.dataframe(list_docs)
 
-        # Querying the docs_chunks_table to get available documents
-        docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
-        list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
+    config_options()
+    init_messages()
 
-        st.write("Available Documents:")
-        st.dataframe(list_docs)
+    # Further logic for chat input and response...
 
-        config_options()
-        init_messages()
+if __name__ == "__main__":
+    main()
 
-        # Display chat messages from history on app rerun
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
 
-        # Accept user input
-        if question := st.chat_input("What do you want to know about your products?"):
-            # Add user message to chat history
-            st.session_state.messages.append({"role": "user", "content": question})
-            # Display user message in chat message container
-            with st.chat_message("user"):
-                st.markdown(question)
-            # Display assistant response in chat message container
-            with st.chat_message("assistant"):
-                message_placeholder = st.empty()
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-                question = question.replace("'", "")
+    # Accept user input
+    if question := st.chat_input("What do you want to know about your products?"):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": question})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(question)
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
 
-                with st.spinner(f"{st.session_state.model_name} thinking..."):
-                    response, relative_paths = answer_question(question)
-                    response = response.replace("'", "")
-                    message_placeholder.markdown(response)
+            question = question.replace("'", "")
 
-                    if relative_paths != "None":
-                        with st.sidebar.expander("Related Documents"):
-                            for path in relative_paths:
-                                cmd2 = f"select GET_PRESIGNED_URL(@docs, '{path}', 360) as URL_LINK from directory(@docs)"
-                                df_url_link = session.sql(cmd2).to_pandas()
-                                url_link = df_url_link._get_value(0, 'URL_LINK')
+            with st.spinner(f"{st.session_state.model_name} thinking..."):
+                response, relative_paths = answer_question(question)
+                response = response.replace("'", "")
+                message_placeholder.markdown(response)
 
-                                display_url = f"Doc: [{path}]({url_link})"
-                                st.sidebar.markdown(display_url)
+                if relative_paths != "None":
+                    with st.sidebar.expander("Related Documents"):
+                        for path in relative_paths:
+                            cmd2 = f"select GET_PRESIGNED_URL(@docs, '{path}', 360) as URL_LINK from directory(@docs)"
+                            df_url_link = session.sql(cmd2).to_pandas()
+                            url_link = df_url_link._get_value(0, 'URL_LINK')
 
-            # Append assistant response to chat history
-            st.session_state.messages.append({"role": "assistant", "content": response})
+                            display_url = f"Doc: [{path}]({url_link})"
+                            st.sidebar.markdown(display_url)
 
-    except Exception as e:
-        st.error(f"Error querying documents or during chat interaction: {e}")
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()
