@@ -273,6 +273,25 @@ def summarize_question_with_history(chat_history, question):
         st.error(f"Error generating response with snowflake.cortex.Complete function: {e}")
         return ""
 
+# def answer_question(myquestion):
+#     prompt, relative_paths = create_prompt(myquestion)
+
+#     try:
+#         # Use the Complete function to generate an answer
+#         model = st.session_state.model_name
+#         options = None  # Specify any necessary options here
+        
+#         # Execute the Complete function in the Snowflake session
+#         result_df = session.table_function(Complete(model, prompt, options=options, session=session))
+        
+#         # Get the result from the DataFrame
+#         response = result_df.collect()[0]['COMPLETE']
+        
+#         return response, relative_paths
+#     except Exception as e:
+#         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
+#         return "", relative_paths
+
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
 
@@ -281,16 +300,18 @@ def answer_question(myquestion):
         model = st.session_state.model_name
         options = None  # Specify any necessary options here
         
-        # Execute the Complete function in the Snowflake session
-        result_df = session.table_function(Complete(model, prompt, options=options, session=session))
+        # Ensure the session is passed to the Complete function to avoid multiple active sessions
+        response = Complete(model, prompt, options=options, session=session)
         
-        # Get the result from the DataFrame
-        response = result_df.collect()[0]['COMPLETE']
+        # Assuming you need to execute this function and collect results
+        result_df = session.table_function(response)
+        result = result_df.collect()[0]['COMPLETE']
         
-        return response, relative_paths
+        return result, relative_paths
     except Exception as e:
         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
         return "", relative_paths
+
 
 
 def create_prompt(myquestion):
