@@ -30,11 +30,12 @@ def create_snowflake_session():
         "user": st.secrets["snowflake"]["user"],
         "password": st.secrets["snowflake"]["password"],
         "authenticator": st.secrets["snowflake"]["authenticator"],
+        "database": "CC_QUICKSTART_CORTEX_SEARCH_DOCS",
+        "schema": "DATA",
 
-        # Uncomment if you need these specific settings
+
         "role": st.secrets.get("snowflake", {}).get("role", None),
         "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
-        "database": st.secrets.get("snowflake", {}).get("database", None),
         "schema": st.secrets.get("snowflake", {}).get("schema", None)
     }
     # Creating Snowpark session
@@ -103,8 +104,67 @@ CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
 
 # Run the SQL script when the app starts
 # Run the SQL script when the app starts
+# Run the SQL script when the app starts
 def run_sql_script():
-    sql_commands = sql_script.strip().split(";")
+    sql_commands = [
+        "CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS",
+        "USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS",  # Set the current database
+        "USE SCHEMA DATA",  # Set the current schema to DATA
+        """
+        CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
+        RETURNS TABLE (chunk VARCHAR)
+        LANGUAGE PYTHON
+        RUNTIME_VERSION = '3.9'
+        HANDLER = 'pdf_text_chunker'
+        PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
+        AS
+        $$
+        from snowflake.snowpark.types import StringType, StructField, StructType
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        from snowflake.snowpark.files import SnowflakeFile
+        import PyPDF2, io
+        import logging
+        import pandas as pd
+
+        class pdf_text_chunker:
+            def read_pdf(self, file_url: str) -> str:
+                logger = logging.getLogger("udf_logger")
+                logger.info(f"Opening file {file_url}")
+                with SnowflakeFile.open(file_url, 'rb') as f:
+                    buffer = io.BytesIO(f.readall())
+                reader = PyPDF2.PdfReader(buffer)
+                text = ""
+                for page in reader.pages:
+                    try:
+                        text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
+                    except:
+                        text = "Unable to Extract"
+                        logger.warn(f"Unable to extract from file {file_url}, page {page}")
+                return text
+
+            def process(self, file_url: str):
+                text = self.read_pdf(file_url)
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size = 1512, chunk_overlap  = 256, length_function = len
+                )
+                chunks = text_splitter.split_text(text)
+                df = pd.DataFrame(chunks, columns=['chunks'])
+                yield from df.itertuples(index=False, name=None)
+        $$;
+        """,
+        "CREATE OR REPLACE STAGE IF NOT EXISTS docs ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE') DIRECTORY = (ENABLE = TRUE)",
+        """
+        CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
+            RELATIVE_PATH VARCHAR(16777216),
+            SIZE NUMBER(38,0),
+            FILE_URL VARCHAR(16777216),
+            SCOPED_FILE_URL VARCHAR(16777216),
+            CHUNK VARCHAR(16777216),
+            CATEGORY VARCHAR(16777216)
+        )
+        """
+    ]
+    
     for command in sql_commands:
         command = command.strip()
         if command:
@@ -116,6 +176,7 @@ def run_sql_script():
                 st.error(f"Error executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
                 st.error(f"Exception: {e}")  # Display the exception for debugging
                 break  # Stop further execution if an error occurs
+
 
 
 # Run the SQL setup
@@ -242,56 +303,59 @@ def answer_question(myquestion):
 def main():
     st.title(":speech_balloon: Chat Document Assistant with Snowflake Cortex")
 
-    # Querying the docs_chunks_table instead of ls @docs
-    docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
-    list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
-    
-    st.write("Available Documents:")
-    st.dataframe(list_docs)
+    try:
+        # Ensure the session is connected to the correct database and schema
+        session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
+        session.sql("USE SCHEMA DATA").collect()
 
-    config_options()
-    init_messages()
+        # Querying the docs_chunks_table to get available documents
+        docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
+        list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
 
-    # Further logic for chat input and response...
+        st.write("Available Documents:")
+        st.dataframe(list_docs)
 
-if __name__ == "__main__":
-    main()
+        config_options()
+        init_messages()
 
+        # Display chat messages from history on app rerun
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
-    # Display chat messages from history on app rerun
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        # Accept user input
+        if question := st.chat_input("What do you want to know about your products?"):
+            # Add user message to chat history
+            st.session_state.messages.append({"role": "user", "content": question})
+            # Display user message in chat message container
+            with st.chat_message("user"):
+                st.markdown(question)
+            # Display assistant response in chat message container
+            with st.chat_message("assistant"):
+                message_placeholder = st.empty()
 
-    # Accept user input
-    if question := st.chat_input("What do you want to know about your products?"):
-        # Add user message to chat history
-        st.session_state.messages.append({"role": "user", "content": question})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(question)
-        # Display assistant response in chat message container
-        with st.chat_message("assistant"):
-            message_placeholder = st.empty()
+                question = question.replace("'", "")
 
-            question = question.replace("'", "")
+                with st.spinner(f"{st.session_state.model_name} thinking..."):
+                    response, relative_paths = answer_question(question)
+                    response = response.replace("'", "")
+                    message_placeholder.markdown(response)
 
-            with st.spinner(f"{st.session_state.model_name} thinking..."):
-                response, relative_paths = answer_question(question)
-                response = response.replace("'", "")
-                message_placeholder.markdown(response)
+                    if relative_paths != "None":
+                        with st.sidebar.expander("Related Documents"):
+                            for path in relative_paths:
+                                cmd2 = f"select GET_PRESIGNED_URL(@docs, '{path}', 360) as URL_LINK from directory(@docs)"
+                                df_url_link = session.sql(cmd2).to_pandas()
+                                url_link = df_url_link._get_value(0, 'URL_LINK')
 
-                if relative_paths != "None":
-                    with st.sidebar.expander("Related Documents"):
-                        for path in relative_paths:
-                            cmd2 = f"select GET_PRESIGNED_URL(@docs, '{path}', 360) as URL_LINK from directory(@docs)"
-                            df_url_link = session.sql(cmd2).to_pandas()
-                            url_link = df_url_link._get_value(0, 'URL_LINK')
+                                display_url = f"Doc: [{path}]({url_link})"
+                                st.sidebar.markdown(display_url)
 
-                            display_url = f"Doc: [{path}]({url_link})"
-                            st.sidebar.markdown(display_url)
+            # Append assistant response to chat history
+            st.session_state.messages.append({"role": "assistant", "content": response})
 
-        st.session_state.messages.append({"role": "assistant", "content": response})
+    except Exception as e:
+        st.error(f"Error querying documents or during chat interaction: {e}")
 
 if __name__ == "__main__":
     main()
