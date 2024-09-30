@@ -102,11 +102,21 @@ CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
 """
 
 # Run the SQL script when the app starts
+# Run the SQL script when the app starts
 def run_sql_script():
     sql_commands = sql_script.strip().split(";")
     for command in sql_commands:
-        if command.strip():
-            session.sql(command.strip()).collect()
+        command = command.strip()
+        if command:
+            try:
+                # Log the SQL command being executed
+                st.write(f"Executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
+                session.sql(command).collect()  # Execute the SQL command
+            except Exception as e:
+                st.error(f"Error executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
+                st.error(f"Exception: {e}")  # Display the exception for debugging
+                break  # Stop further execution if an error occurs
+
 
 # Run the SQL setup
 run_sql_script()
