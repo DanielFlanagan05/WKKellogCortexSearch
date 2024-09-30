@@ -1,6 +1,7 @@
 import streamlit as st  # Import python packages
 from snowflake.snowpark import Session
 from snowflake.core import Root
+from snowflake.cortex import Complete  
 import pandas as pd
 import json
 
@@ -236,7 +237,7 @@ def get_chat_history():
 
 def summarize_question_with_history(chat_history, question):
     prompt = f"""
-        Based on the chat history below and the question, generate a query that extend the question
+        Based on the chat history below and the question, generate a query that extends the question
         with the chat history provided. The query should be in natural language.
         Answer with only the query. Do not add any explanation.
 
@@ -248,14 +249,20 @@ def summarize_question_with_history(chat_history, question):
         </question>
     """
 
-    summary = Complete(st.session_state.model_name, prompt)
+    try:
+        summary = Complete(st.session_state.model_name, prompt)
 
-    if st.session_state.debug:
-        st.sidebar.text("Summary to be used to find similar chunks in the docs:")
-        st.sidebar.caption(summary)
+        if st.session_state.debug:
+            st.sidebar.text("Summary to be used to find similar chunks in the docs:")
+            st.sidebar.caption(summary)
 
-    summary = summary.replace("'", "")
-    return summary
+        summary = summary.replace("'", "")
+        return summary
+
+    except Exception as e:
+        st.error(f"Error generating response with Complete function: {e}")
+        return ""
+
 
 def create_prompt(myquestion):
     if st.session_state.use_chat_history:
