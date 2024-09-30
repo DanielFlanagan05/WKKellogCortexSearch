@@ -340,7 +340,6 @@ def main():
     st.title(":speech_balloon: Chat Document Assistant with Snowflake Cortex")
 
     # Querying the docs_chunks_table instead of ls @docs
-    
     docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
     list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
     
@@ -352,19 +351,10 @@ def main():
 
     # Further logic for chat input and response...
 
-if __name__ == "__main__":
-    main()
-    if "model_selection_key" in st.session_state:
-        del st.session_state["model_selection_key"]
-
-    st.sidebar.expander("Session State").write(st.session_state)
-
-
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-
 
     # Accept user input
     if question := st.chat_input("What do you want to know about your products?"):
@@ -395,6 +385,7 @@ if __name__ == "__main__":
                             st.sidebar.markdown(display_url)
 
         st.session_state.messages.append({"role": "assistant", "content": response})
+
 
 if __name__ == "__main__":
     main()
