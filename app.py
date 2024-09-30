@@ -352,12 +352,17 @@ def main():
 
 if __name__ == "__main__":
     main()
+    if "model_selection_key" in st.session_state:
+        del st.session_state["model_selection_key"]
+
+    st.sidebar.expander("Session State").write(st.session_state)
 
 
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+
 
     # Accept user input
     if question := st.chat_input("What do you want to know about your products?"):
