@@ -1,6 +1,8 @@
 import streamlit as st  # Import python packages
 from snowflake.snowpark import Session
 from snowflake.core import Root
+from snowflake.cortex import Complete
+from snowflake.snowpark.functions import col
 import pandas as pd
 import json
 
@@ -247,12 +249,17 @@ def summarize_question_with_history(chat_history, question):
         {question}
         </question>
     """
+
     try:
-        # Execute the SNOWFLAKE.CORTEX.COMPLETE function via SQL
+        # Create the Complete function call in the Snowflake session
         model = st.session_state.model_name
-        query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{prompt}') as response"
-        response_row = session.sql(query).collect()[0]  # Get the first result
-        response = response_row["RESPONSE"]
+        options = None  # Add any options you need for the Complete function here
+        
+        response_df = session.table_function(
+            Complete(model, prompt, options=options, session=session)
+        )
+        
+        response = response_df.collect()[0]['COMPLETE']
 
         if st.session_state.debug:
             st.sidebar.text("Summary to be used to find similar chunks in the docs:")
@@ -261,7 +268,7 @@ def summarize_question_with_history(chat_history, question):
         return response
 
     except Exception as e:
-        st.error(f"Error generating response with SNOWFLAKE.CORTEX.COMPLETE function: {e}")
+        st.error(f"Error generating response with snowflake.cortex.Complete function: {e}")
         return ""
 
 
@@ -269,17 +276,20 @@ def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
     
     try:
-        # Execute the SNOWFLAKE.CORTEX.COMPLETE function via SQL
+        # Use the Complete function to get the response
         model = st.session_state.model_name
-        query = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('{model}', '{prompt}') as response"
-        response_row = session.sql(query).collect()[0]  # Get the first result
-        response = response_row["RESPONSE"]
-
+        options = None  # Specify any necessary options here
+        
+        response_df = session.table_function(
+            Complete(model, prompt, options=options, session=session)
+        )
+        
+        response = response_df.collect()[0]['COMPLETE']
+        
         return response, relative_paths
     except Exception as e:
-        st.error(f"Error generating answer with SNOWFLAKE.CORTEX.COMPLETE function: {e}")
+        st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
         return "", relative_paths
-
 
 def create_prompt(myquestion):
     if st.session_state.use_chat_history:
