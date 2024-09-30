@@ -156,7 +156,7 @@ def run_sql_script():
                 yield from df.itertuples(index=False, name=None)
         $$;
         """,
-        "CREATE OR REPLACE STAGE IF NOT EXISTS docs ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE') DIRECTORY = (ENABLE = TRUE)",
+        "CREATE OR REPLACE STAGE IF NOT EXISTS docs ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' DIRECTORY = ENABLE = TRUE",
         """
         CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
             RELATIVE_PATH VARCHAR(16777216),
