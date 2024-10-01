@@ -356,10 +356,10 @@ def create_prompt(myquestion):
 
     return prompt, relative_paths
 
-def answer_question(myquestion):
-    prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt)
-    return response, relative_paths
+# def answer_question(myquestion):
+#     prompt, relative_paths = create_prompt(myquestion)
+#     response = Complete(st.session_state.model_name, prompt)
+#     return response, relative_paths
 
 def main():
     st.title(":speech_balloon: Chat Document Assistant with Snowflake Cortex")
