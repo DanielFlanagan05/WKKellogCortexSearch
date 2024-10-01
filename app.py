@@ -34,8 +34,6 @@ def create_snowflake_session():
         "authenticator": st.secrets["snowflake"]["authenticator"],
         "database": "CC_QUICKSTART_CORTEX_SEARCH_DOCS",
         "schema": "DATA",
-
-
         "role": st.secrets.get("snowflake", {}).get("role", None),
         "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
         "schema": st.secrets.get("snowflake", {}).get("schema", None)
@@ -44,7 +42,12 @@ def create_snowflake_session():
     session = Session.builder.configs(connection_parameters).create()
     return session
 
-session = create_snowflake_session()
+# Ensures only one session is created and used
+if 'session' not in st.session_state:
+    st.session_state['session'] = create_snowflake_session()
+session = st.session_state['session']
+
+# session = create_snowflake_session()
 
 # SQL script to create stage, tables, and functions
 sql_script = """
@@ -273,25 +276,6 @@ def summarize_question_with_history(chat_history, question):
         st.error(f"Error generating response with snowflake.cortex.Complete function: {e}")
         return ""
 
-# def answer_question(myquestion):
-#     prompt, relative_paths = create_prompt(myquestion)
-
-#     try:
-#         # Use the Complete function to generate an answer
-#         model = st.session_state.model_name
-#         options = None  # Specify any necessary options here
-        
-#         # Execute the Complete function in the Snowflake session
-#         result_df = session.table_function(Complete(model, prompt, options=options, session=session))
-        
-#         # Get the result from the DataFrame
-#         response = result_df.collect()[0]['COMPLETE']
-        
-#         return response, relative_paths
-#     except Exception as e:
-#         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
-#         return "", relative_paths
-
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
 
@@ -300,17 +284,36 @@ def answer_question(myquestion):
         model = st.session_state.model_name
         options = None  # Specify any necessary options here
         
-        # Ensure the session is passed to the Complete function to avoid multiple active sessions
-        response = Complete(model, prompt, options=options, session=st.get_active_session())
+        # Execute the Complete function in the Snowflake session
+        result_df = session.table_function(Complete(model, prompt, options=options, session=session))
         
-        # Assuming you need to execute this function and collect results
-        result_df = session.table_function(response)
-        result = result_df.collect()[0]['COMPLETE']
+        # Get the result from the DataFrame
+        response = result_df.collect()[0]['COMPLETE']
         
-        return result, relative_paths
+        return response, relative_paths
     except Exception as e:
         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
         return "", relative_paths
+
+# def answer_question(myquestion):
+#     prompt, relative_paths = create_prompt(myquestion)
+
+#     try:
+#         # Use the Complete function to generate an answer
+#         model = st.session_state.model_name
+#         options = None  # Specify any necessary options here
+        
+#         # Ensure the session is passed to the Complete function to avoid multiple active sessions
+#         response = Complete(model, prompt, options=options, session=st.get_active_session())
+        
+#         # Assuming you need to execute this function and collect results
+#         result_df = session.table_function(response)
+#         result = result_df.collect()[0]['COMPLETE']
+        
+#         return result, relative_paths
+#     except Exception as e:
+#         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
+#         return "", relative_paths
 
 
 
