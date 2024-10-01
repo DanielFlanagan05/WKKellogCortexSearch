@@ -1,6 +1,5 @@
 CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
 CREATE SCHEMA IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA;
-CREATE SCHEMA DATA;
 
 CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
 RETURNS TABLE (chunk VARCHAR)
@@ -19,7 +18,7 @@ import pandas as pd
 class pdf_text_chunker:
 
     def read_pdf(self, file_url: str) -> str:
-        logger = logging.getLogger("udf_logger")
+        logger is logging.getLogger("udf_logger")
         logger.info(f"Opening file {file_url}")
         with SnowflakeFile.open(file_url, 'rb') as f:
             buffer = io.BytesIO(f.readall())
@@ -50,71 +49,59 @@ CREATE OR REPLACE STAGE docs
 ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' 
 DIRECTORY = ENABLE = TRUE;
 
--- ls @docs;
-
-create or replace TABLE DOCS_CHUNKS_TABLE ( 
-    RELATIVE_PATH VARCHAR(16777216), -- Relative path to the PDF file
-    SIZE NUMBER(38,0), -- Size of the PDF
-    FILE_URL VARCHAR(16777216), -- URL for the PDF
-    SCOPED_FILE_URL VARCHAR(16777216), -- Scoped url (you can choose which one to keep depending on your use case)
-    CHUNK VARCHAR(16777216), -- Piece of text
-    CATEGORY VARCHAR(16777216) -- Will hold the document category to enable filtering
+CREATE OR REPLACE TABLE DOCS_CHUNKS_TABLE ( 
+    RELATIVE_PATH VARCHAR(16777216), 
+    SIZE NUMBER(38,0), 
+    FILE_URL VARCHAR(16777216), 
+    SCOPED_FILE_URL VARCHAR(16777216), 
+    CHUNK VARCHAR(16777216), 
+    CATEGORY VARCHAR(16777216)
 );
 
-insert into docs_chunks_table (relative_path, size, file_url,
-                            scoped_file_url, chunk)
-    select relative_path, 
-            size,
-            file_url, 
-            build_scoped_file_url(@docs, relative_path) as scoped_file_url,
-            func.chunk as chunk
-    from 
-        directory(@docs),
-        TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path))) as func;
+-- Fixed the alias issue here
+INSERT INTO DOCS_CHUNKS_TABLE (relative_path, size, file_url, scoped_file_url, chunk)
+    SELECT relative_path, 
+           size,
+           file_url, 
+           build_scoped_file_url(@docs, relative_path),
+           chunk
+    FROM directory(@docs),
+         TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path)));
 
-
-CREATE
-OR REPLACE TEMPORARY TABLE docs_categories AS WITH unique_documents AS (
-  SELECT
-    DISTINCT relative_path
-  FROM
-    docs_chunks_table
+-- Creating temporary table for categories
+CREATE OR REPLACE TEMPORARY TABLE docs_categories AS 
+WITH unique_documents AS (
+    SELECT DISTINCT relative_path FROM docs_chunks_table
 ),
 docs_category_cte AS (
-  SELECT
-    relative_path,
-    TRIM(snowflake.cortex.COMPLETE (
-      'llama3-70b',
-      'Given the name of the file between <file> and </file> determine if it is related to bikes or snow or gdp or equity or income or sales. Use only one word <file> ' || relative_path || '</file>'
-    ), '\n') AS category
-  FROM
-    unique_documents
+    SELECT relative_path,
+           TRIM(snowflake.cortex.COMPLETE (
+             'llama3-70b',
+             'Given the name of the file between <file> and </file> determine if it is related to bikes or snow or gdp or equity or income or sales. Use only one word <file> ' || relative_path || '</file>'
+           ), '\n') AS category
+    FROM unique_documents
 )
-SELECT
-  *
-FROM
-  docs_category_cte;
+SELECT * FROM docs_category_cte;
 
-select category from docs_categories group by category;
+-- Updating categories in main table
+UPDATE docs_chunks_table 
+SET category = docs_categories.category
+FROM docs_categories
+WHERE docs_chunks_table.relative_path = docs_categories.relative_path;
 
-update docs_chunks_table 
-  SET category = docs_categories.category
-  from docs_categories
-  where  docs_chunks_table.relative_path = docs_categories.relative_path;
-
-create or replace CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS
+-- Cortex Search Service creation
+CREATE OR REPLACE CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS
 ON chunk
 ATTRIBUTES category
-warehouse = COMPUTE_WH
+WAREHOUSE = COMPUTE_WH
 TARGET_LAG = '1 minute'
-as (
-    select chunk,
-        relative_path,
-        file_url,
-        category
-    from docs_chunks_table
-); 
+AS (
+    SELECT chunk,
+           relative_path,
+           file_url,
+           category
+    FROM docs_chunks_table
+);
 
-
-SELECT relative_path, file_url 
-FROM docs_chunks_table;
+-- Query the final table
+SELECT relative_path, file_url FROM docs_chunks_table;
