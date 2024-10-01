@@ -301,7 +301,7 @@ def answer_question(myquestion):
         options = None  # Specify any necessary options here
         
         # Ensure the session is passed to the Complete function to avoid multiple active sessions
-        response = Complete(model, prompt, options=options, session=session)
+        response = Complete(model, prompt, options=options, session=st.get_active_session())
         
         # Assuming you need to execute this function and collect results
         result_df = session.table_function(response)
