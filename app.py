@@ -276,6 +276,7 @@ def main():
     if question := st.chat_input("What do you want to know about your products?"):
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": question})
+        print(question)
         # Display user message in chat message container
         with st.chat_message("user"):
             st.markdown(question)
