@@ -58,3 +58,51 @@ CREATE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
     CHUNK VARCHAR(16777216),
     CATEGORY VARCHAR(16777216)
 );
+
+
+INSERT INTO docs_chunks_table (relative_path, size, file_url, scoped_file_url, chunk)
+SELECT relative_path, 
+       size,
+       file_url, 
+       build_scoped_file_url(@docs, relative_path) AS scoped_file_url,
+       func.chunk AS chunk
+FROM 
+    directory(@docs),
+    TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path))) AS func;
+
+-- Categorizing documents
+CREATE OR REPLACE TEMPORARY TABLE docs_categories AS WITH unique_documents AS (
+  SELECT DISTINCT relative_path FROM docs_chunks_table
+),
+docs_category_cte AS (
+  SELECT relative_path,
+    TRIM(snowflake.cortex.COMPLETE (
+      'llama3-70b',
+      'Given the name of the file between <file> and </file> determine if it is related to bikes or snow or gdp or equity or income or sales. Use only one word <file> ' || relative_path || '</file>'
+    ), '\n') AS category
+  FROM unique_documents
+)
+SELECT * FROM docs_category_cte;
+
+UPDATE docs_chunks_table 
+SET category = docs_categories.category
+FROM docs_categories
+WHERE docs_chunks_table.relative_path = docs_categories.relative_path;
+
+-- Creating the Cortex Search Service
+CREATE OR REPLACE CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS
+ON chunk
+ATTRIBUTES category
+WAREHOUSE = COMPUTE_WH
+TARGET_LAG = '1 minute'
+AS (
+    SELECT chunk,
+           relative_path,
+           file_url,
+           category
+    FROM docs_chunks_table
+);
+
+-- Selecting documents and their URLs
+SELECT relative_path, file_url 
+FROM docs_chunks_table;
