@@ -93,7 +93,7 @@ class pdf_text_chunker:
         yield from df.itertuples(index=False, name=None)
 $$;
 
-CREATE OR REPLACE STAGE IF NOT EXISTS docs
+CREATE STAGE IF NOT EXISTS docs
 STORAGE_INTEGRATION = 'SNOWFLAKE_SSE'
 DIRECTORY = (ENABLE = TRUE);
 
@@ -114,7 +114,7 @@ def run_sql_script():
         "USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS",  # Set the current database
         "USE SCHEMA DATA",  # Set the current schema to DATA
         """
-        CREATE OR REPLACE STAGE IF NOT EXISTS docs
+        CREATE STAGE IF NOT EXISTS docs
         STORAGE_INTEGRATION = 'SNOWFLAKE_SSE'
         DIRECTORY = (ENABLE = TRUE);
         """,
