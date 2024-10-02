@@ -17,30 +17,38 @@ import io
 import logging
 import pandas as pd
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("pdf_chunker_udf")
+
 def read_pdf(file_url: str) -> str:
-    logger = logging.getLogger("udf_logger")
-    logger.info(f"Opening file {file_url}")
+    logger.info(f"Starting to read the PDF from {file_url}")
     with SnowflakeFile.open(file_url, 'rb') as f:
         buffer = io.BytesIO(f.readall())
+    logger.info(f"Read the PDF file from {file_url}")
     reader = PyPDF2.PdfReader(buffer)
     text = ""
     for page in reader.pages:
         try:
+            logger.info(f"Extracting text from page {page}")
             text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-        except:
+        except Exception as e:
             text = "Unable to Extract"
-            logger.warn(f"Unable to extract from file {file_url}, page {page}")
+            logger.warning(f"Unable to extract text from file {file_url}, page {page}, error: {e}")
     return text
 
 def process(file_url: str):
+    logger.info(f"Processing file: {file_url}")
     text = read_pdf(file_url)
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1512,
         chunk_overlap=256,
         length_function=len
     )
+    logger.info(f"Splitting text into chunks")
     chunks = text_splitter.split_text(text)
     df = pd.DataFrame(chunks, columns=['chunks'])
+    logger.info(f"Yielding {len(chunks)} chunks")
     yield from df.itertuples(index=False, name=None)
 $$;
 
