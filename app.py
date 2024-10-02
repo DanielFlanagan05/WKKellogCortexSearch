@@ -185,22 +185,21 @@ def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
 
     try:
-        # Construct SQL query for the Complete function
+        # Use the Complete function to generate an answer
         model = st.session_state.model_name
         options = None  # Specify any necessary options here
-
-        # Construct the query string for the Complete function
-        sql_query = f"SELECT COMPLETE('{model}', '{prompt}', '{options}')"
-
-        # Execute the Complete function
-        result_df = session.sql(sql_query).collect()
-        result = result_df[0]['COMPLETE']
-
+        
+        # Pass the active session to the Complete function
+        response = Complete(model, prompt, options=options, session=session)
+        
+        # Execute the response and collect results
+        result_df = session.table_function(response)
+        result = result_df.collect()[0]['COMPLETE']
+        
         return result, relative_paths
     except Exception as e:
         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
         return "", relative_paths
-
 
 
 
