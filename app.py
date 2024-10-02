@@ -390,11 +390,11 @@ def get_chat_history():
 # Main function
 def main():
     # Lists available documents
-    docs_available = session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
-    list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
+    # docs_available = st.session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
+    # list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
     
-    st.write("Available Documents:")
-    st.dataframe(list_docs)
+    # st.write("Available Documents:")
+    # st.dataframe(list_docs)
 
     config_options()
     init_messages()
