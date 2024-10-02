@@ -45,7 +45,7 @@ class pdf_text_chunker:
 $$;
 
 -- Creating a stage for documents
-CREATE OR REPLACE STAGE IF NOT EXISTS docs
+CREATE STAGE IF NOT EXISTS docs
 ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')
 DIRECTORY = (ENABLE = TRUE);
 
