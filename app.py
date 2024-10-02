@@ -47,8 +47,6 @@ if 'session' not in st.session_state:
     st.session_state['session'] = create_snowflake_session()
 session = st.session_state['session']
 
-# session = create_snowflake_session()
-
 # SQL script to create stage, tables, and functions
 sql_script = """
 CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
@@ -110,55 +108,11 @@ CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
 """
 
 # Run the SQL script when the app starts
-# Run the SQL script when the app starts
-# Run the SQL script when the app starts
 def run_sql_script():
     sql_commands = [
         "CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS",
         "USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS",  # Set the current database
         "USE SCHEMA DATA",  # Set the current schema to DATA
-        """
-        CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
-        RETURNS TABLE (chunk VARCHAR)
-        LANGUAGE PYTHON
-        RUNTIME_VERSION = '3.9'
-        HANDLER = 'pdf_text_chunker'
-        PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
-        AS
-        $$
-        from snowflake.snowpark.types import StringType, StructField, StructType
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
-        from snowflake.snowpark.files import SnowflakeFile
-        import PyPDF2, io
-        import logging
-        import pandas as pd
-
-        class pdf_text_chunker:
-            def read_pdf(self, file_url: str) -> str:
-                logger = logging.getLogger("udf_logger")
-                logger.info(f"Opening file {file_url}")
-                with SnowflakeFile.open(file_url, 'rb') as f:
-                    buffer = io.BytesIO(f.readall())
-                reader = PyPDF2.PdfReader(buffer)
-                text = ""
-                for page in reader.pages:
-                    try:
-                        text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-                    except:
-                        text = "Unable to Extract"
-                        logger.warn(f"Unable to extract from file {file_url}, page {page}")
-                return text
-
-            def process(self, file_url: str):
-                text = self.read_pdf(file_url)
-                text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size = 1512, chunk_overlap  = 256, length_function = len
-                )
-                chunks = text_splitter.split_text(text)
-                df = pd.DataFrame(chunks, columns=['chunks'])
-                yield from df.itertuples(index=False, name=None)
-        $$;
-        """,
         "CREATE OR REPLACE STAGE IF NOT EXISTS docs ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' DIRECTORY = ENABLE = TRUE",
         """
         CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
@@ -183,8 +137,6 @@ def run_sql_script():
                 st.error(f"Error executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
                 st.error(f"Exception: {e}")  # Display the exception for debugging
                 break  # Stop further execution if an error occurs
-
-
 
 # Run the SQL setup
 run_sql_script()
@@ -276,25 +228,6 @@ def summarize_question_with_history(chat_history, question):
         st.error(f"Error generating response with snowflake.cortex.Complete function: {e}")
         return ""
 
-# def answer_question(myquestion):
-#     prompt, relative_paths = create_prompt(myquestion)
-
-#     try:
-#         # Use the Complete function to generate an answer
-#         model = st.session_state.model_name
-#         options = None  # Specify any necessary options here
-        
-#         # Execute the Complete function in the Snowflake session
-#         result_df = session.table_function(Complete(model, prompt, options=options, session=session))
-        
-#         # Get the result from the DataFrame
-#         response = result_df.collect()[0]['COMPLETE']
-        
-#         return response, relative_paths
-#     except Exception as e:
-#         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
-#         return "", relative_paths
-
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
 
@@ -314,9 +247,6 @@ def answer_question(myquestion):
     except Exception as e:
         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
         return "", relative_paths
-
-
-
 
 def create_prompt(myquestion):
     if st.session_state.use_chat_history:
