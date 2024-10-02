@@ -1,64 +1,61 @@
-CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
-CREATE SCHEMA IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA;
+CC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA.DOCSCC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA.DOCSCC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA.DOCSCC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA.DOCSCC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA.DOCSCC_QUICKSTART_CORTEX_SEARCH_DOCSCREATE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS;
 CREATE SCHEMA DATA;
 
-CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
-RETURNS TABLE (chunk VARCHAR)
-LANGUAGE PYTHON
-RUNTIME_VERSION = '3.9'
-HANDLER = 'process'
-PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
-AS
+create or replace function pdf_text_chunker(file_url string)
+returns table (chunk varchar)
+language python
+runtime_version = '3.9'
+handler = 'pdf_text_chunker'
+packages = ('snowflake-snowpark-python','PyPDF2', 'langchain')
+as
 $$
-from snowflake.snowpark.files import SnowflakeFile
+from snowflake.snowpark.types import StringType, StructField, StructType
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import PyPDF2
-import io
+from snowflake.snowpark.files import SnowflakeFile
+import PyPDF2, io
 import logging
 import pandas as pd
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("pdf_chunker_udf")
+class pdf_text_chunker:
 
-def read_pdf(file_url: str) -> str:
-    logger.info(f"Starting to read the PDF from {file_url}")
-    with SnowflakeFile.open(file_url, 'rb') as f:
-        buffer = io.BytesIO(f.readall())
-    logger.info(f"Read the PDF file from {file_url}")
-    reader = PyPDF2.PdfReader(buffer)
-    text = ""
-    for page in reader.pages:
-        try:
-            logger.info(f"Extracting text from page {page}")
-            text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-        except Exception as e:
-            text = "Unable to Extract"
-            logger.warning(f"Unable to extract text from file {file_url}, page {page}, error: {e}")
-    return text
+    def read_pdf(self, file_url: str) -> str:
+    
+        logger = logging.getLogger("udf_logger")
+        logger.info(f"Opening file {file_url}")
+    
+        with SnowflakeFile.open(file_url, 'rb') as f:
+            buffer = io.BytesIO(f.readall())
+            
+        reader = PyPDF2.PdfReader(buffer)   
+        text = ""
+        for page in reader.pages:
+            try:
+                text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
+            except:
+                text = "Unable to Extract"
+                logger.warn(f"Unable to extract from file {file_url}, page {page}")
+        
+        return text
 
-def process(file_url: str):
-    logger.info(f"Processing file: {file_url}")
-    text = read_pdf(file_url)
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1512,
-        chunk_overlap=256,
-        length_function=len
-    )
-    logger.info(f"Splitting text into chunks")
-    chunks = text_splitter.split_text(text)
-    df = pd.DataFrame(chunks, columns=['chunks'])
-    logger.info(f"Yielding {len(chunks)} chunks")
-    yield from df.itertuples(index=False, name=None)
+    def process(self,file_url: str):
+
+        text = self.read_pdf(file_url)
+        
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size = 1512, #Adjust this as you see fit
+            chunk_overlap  = 256, #This let's text have some form of overlap. Useful for keeping chunks contextual
+            length_function = len
+        )
+    
+        chunks = text_splitter.split_text(text)
+        df = pd.DataFrame(chunks, columns=['chunks'])
+        
+        yield from df.itertuples(index=False, name=None)
 $$;
 
+create or replace stage docs ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE') DIRECTORY = ( ENABLE = true );
 
-
-CREATE OR REPLACE STAGE docs 
-ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' 
-DIRECTORY = ENABLE = TRUE;
- 
--- ls @docs;
+ls @docs;
 
 create or replace TABLE DOCS_CHUNKS_TABLE ( 
     RELATIVE_PATH VARCHAR(16777216), -- Relative path to the PDF file
