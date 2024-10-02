@@ -18,21 +18,33 @@ import PyPDF2, io
 import logging
 import pandas as pd
 
+from PyPDF2.errors import PdfReadError
+
 class pdf_text_chunker:
     def read_pdf(self, file_url: str) -> str:
         logger = logging.getLogger("udf_logger")
         logger.info(f"Opening file {file_url}")
-        with SnowflakeFile.open(file_url, 'rb') as f:
-            buffer = io.BytesIO(f.readall())
-        reader = PyPDF2.PdfReader(buffer)
-        text = ""
-        for page in reader.pages:
-            try:
-                text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-            except:
-                text = "Unable to Extract"
-                logger.warn(f"Unable to extract from file {file_url}, page {page}")
+        
+        try:
+            with SnowflakeFile.open(file_url, 'rb') as f:
+                buffer = io.BytesIO(f.readall())
+            reader = PyPDF2.PdfReader(buffer)
+            text = ""
+            for page in reader.pages:
+                try:
+                    text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
+                except Exception as e:
+                    logger.warn(f"Unable to extract text from file {file_url}, page {page}: {e}")
+                    text = "Unable to Extract"
+        except PdfReadError as e:
+            logger.error(f"Failed to read PDF file {file_url}: {e}")
+            text = "PDF Read Error"
+        except Exception as e:
+            logger.error(f"Unexpected error while reading PDF file {file_url}: {e}")
+            text = "General Error"
+        
         return text
+
 
     def process(self, file_url: str):
         text = self.read_pdf(file_url)
