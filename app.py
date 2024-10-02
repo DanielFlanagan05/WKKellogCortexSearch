@@ -178,7 +178,7 @@ def get_similar_chunks_search_service(query):
 # Summarize chat history with the current question
 def summarize_question_with_history(chat_history, question):
     prompt = f"<chat_history>{chat_history}</chat_history><question>{question}</question>"
-    return Complete(st.session_state.model_name, prompt)
+    return Complete(model = st.session_state.model_name, prompt = prompt, session=session)
 
 # Create a prompt for the assistant
 def create_prompt(myquestion):
@@ -194,7 +194,7 @@ def create_prompt(myquestion):
 # Answer the question using the assistant
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt)
+    response = Complete(st.session_state.model_name, prompt, session=session)
     return response, relative_paths
 
 # Get chat history
