@@ -45,9 +45,9 @@ class pdf_text_chunker:
 $$;
 
 -- Creating a stage for documents
-CREATE OR REPLACE STAGE IF NOT EXISTS docs 
-ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' 
-DIRECTORY = ENABLE = TRUE;
+CREATE OR REPLACE STAGE IF NOT EXISTS docs
+ENCRYPTION = (TYPE = 'SNOWFLAKE_SSE')
+DIRECTORY = (ENABLE = TRUE);
 
 -- Creating a table to store document chunks
 CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
