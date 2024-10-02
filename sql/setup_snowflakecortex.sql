@@ -1,107 +1,120 @@
 CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
 CREATE SCHEMA IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS.DATA;
+CREATE SCHEMA DATA;
 
 CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
 RETURNS TABLE (chunk VARCHAR)
 LANGUAGE PYTHON
 RUNTIME_VERSION = '3.9'
-HANDLER = 'pdf_text_chunker'
+HANDLER = 'process'
 PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
 AS
 $$
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from snowflake.snowpark.files import SnowflakeFile
-import PyPDF2, io
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+import PyPDF2
+import io
 import logging
 import pandas as pd
 
-class pdf_text_chunker:
+def read_pdf(file_url: str) -> str:
+    logger = logging.getLogger("udf_logger")
+    logger.info(f"Opening file {file_url}")
+    with SnowflakeFile.open(file_url, 'rb') as f:
+        buffer = io.BytesIO(f.readall())
+    reader = PyPDF2.PdfReader(buffer)
+    text = ""
+    for page in reader.pages:
+        try:
+            text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
+        except:
+            text = "Unable to Extract"
+            logger.warn(f"Unable to extract from file {file_url}, page {page}")
+    return text
 
-    def read_pdf(self, file_url: str) -> str:
-        logger is logging.getLogger("udf_logger")
-        logger.info(f"Opening file {file_url}")
-        with SnowflakeFile.open(file_url, 'rb') as f:
-            buffer = io.BytesIO(f.readall())
-        reader = PyPDF2.PdfReader(buffer)
-        text = ""
-        for page in reader.pages:
-            try:
-                text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-            except:
-                text = "Unable to Extract"
-                logger.warn(f"Unable to extract from file {file_url}, page {page}")
-        return text
-
-    def process(self, file_url: str):
-        text = self.read_pdf(file_url)
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=1512,
-            chunk_overlap=256,
-            length_function=len
-        )
-        chunks = text_splitter.split_text(text)
-        df = pd.DataFrame(chunks, columns=['chunks'])
-        yield from df.itertuples(index=False, name=None)
+def process(file_url: str):
+    text = read_pdf(file_url)
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1512,
+        chunk_overlap=256,
+        length_function=len
+    )
+    chunks = text_splitter.split_text(text)
+    df = pd.DataFrame(chunks, columns=['chunks'])
+    yield from df.itertuples(index=False, name=None)
 $$;
+
 
 
 CREATE OR REPLACE STAGE docs 
 ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' 
 DIRECTORY = ENABLE = TRUE;
+ 
+-- ls @docs;
 
-CREATE OR REPLACE TABLE DOCS_CHUNKS_TABLE ( 
-    RELATIVE_PATH VARCHAR(16777216), 
-    SIZE NUMBER(38,0), 
-    FILE_URL VARCHAR(16777216), 
-    SCOPED_FILE_URL VARCHAR(16777216), 
-    CHUNK VARCHAR(16777216), 
-    CATEGORY VARCHAR(16777216)
+create or replace TABLE DOCS_CHUNKS_TABLE ( 
+    RELATIVE_PATH VARCHAR(16777216), -- Relative path to the PDF file
+    SIZE NUMBER(38,0), -- Size of the PDF
+    FILE_URL VARCHAR(16777216), -- URL for the PDF
+    SCOPED_FILE_URL VARCHAR(16777216), -- Scoped url (you can choose which one to keep depending on your use case)
+    CHUNK VARCHAR(16777216), -- Piece of text
+    CATEGORY VARCHAR(16777216) -- Will hold the document category to enable filtering
 );
 
--- Fixed the alias issue here
-INSERT INTO DOCS_CHUNKS_TABLE (relative_path, size, file_url, scoped_file_url, chunk)
-    SELECT relative_path, 
-           size,
-           file_url, 
-           build_scoped_file_url(@docs, relative_path),
-           chunk
-    FROM directory(@docs),
-         TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path)));
+insert into docs_chunks_table (relative_path, size, file_url,
+                            scoped_file_url, chunk)
+    select relative_path, 
+            size,
+            file_url, 
+            build_scoped_file_url(@docs, relative_path) as scoped_file_url,
+            func.chunk as chunk
+    from 
+        directory(@docs),
+        TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path))) as func;
 
--- Creating temporary table for categories
-CREATE OR REPLACE TEMPORARY TABLE docs_categories AS 
-WITH unique_documents AS (
-    SELECT DISTINCT relative_path FROM docs_chunks_table
+
+CREATE
+OR REPLACE TEMPORARY TABLE docs_categories AS WITH unique_documents AS (
+  SELECT
+    DISTINCT relative_path
+  FROM
+    docs_chunks_table
 ),
 docs_category_cte AS (
-    SELECT relative_path,
-           TRIM(snowflake.cortex.COMPLETE (
-             'llama3-70b',
-             'Given the name of the file between <file> and </file> determine if it is related to bikes or snow or gdp or equity or income or sales. Use only one word <file> ' || relative_path || '</file>'
-           ), '\n') AS category
-    FROM unique_documents
+  SELECT
+    relative_path,
+    TRIM(snowflake.cortex.COMPLETE (
+      'llama3-70b',
+      'Given the name of the file between <file> and </file> determine if it is related to bikes or snow or gdp or equity or income or sales. Use only one word <file> ' || relative_path || '</file>'
+    ), '\n') AS category
+  FROM
+    unique_documents
 )
-SELECT * FROM docs_category_cte;
+SELECT
+  *
+FROM
+  docs_category_cte;
 
--- Updating categories in main table
-UPDATE docs_chunks_table 
-SET category = docs_categories.category
-FROM docs_categories
-WHERE docs_chunks_table.relative_path = docs_categories.relative_path;
+select category from docs_categories group by category;
 
--- Cortex Search Service creation
-CREATE OR REPLACE CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS
+update docs_chunks_table 
+  SET category = docs_categories.category
+  from docs_categories
+  where  docs_chunks_table.relative_path = docs_categories.relative_path;
+
+create or replace CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS
 ON chunk
 ATTRIBUTES category
-WAREHOUSE = COMPUTE_WH
+warehouse = COMPUTE_WH
 TARGET_LAG = '1 minute'
-AS (
-    SELECT chunk,
-           relative_path,
-           file_url,
-           category
-    FROM docs_chunks_table
-);
+as (
+    select chunk,
+        relative_path,
+        file_url,
+        category
+    from docs_chunks_table
+); 
 
--- Query the final table
-SELECT relative_path, file_url FROM docs_chunks_table;
+
+SELECT relative_path, file_url 
+FROM docs_chunks_table;
