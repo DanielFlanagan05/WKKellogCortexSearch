@@ -85,6 +85,9 @@ session = st.session_state['session']
 if 'root' not in st.session_state:
     st.session_state['root'] = Root(st.session_state['session'])
     st.session_state['svc'] = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+    
+svc = st.session_state['svc']
+
 
 
 # Run the SQL setup script
