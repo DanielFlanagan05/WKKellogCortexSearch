@@ -181,25 +181,30 @@ def summarize_question_with_history(chat_history, question):
 #         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
 #         return "", relative_paths
 
+# def answer_question(myquestion):
+#     prompt, relative_paths = create_prompt(myquestion)
+
+#     try:
+#         # Use the Complete function to generate an answer
+#         model = st.session_state.model_name
+#         options = None  # Specify any necessary options here
+        
+#         # Pass the active session to the Complete function
+#         response = Complete(model, prompt, options=options, session=session)
+        
+#         # Execute the response and collect results
+#         result_df = session.table_function(response)
+#         result = result_df.collect()[0]['COMPLETE']
+        
+#         return result, relative_paths
+#     except Exception as e:
+#         st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
+#         return "", relative_paths
+
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
-
-    try:
-        # Use the Complete function to generate an answer
-        model = st.session_state.model_name
-        options = None  # Specify any necessary options here
-        
-        # Pass the active session to the Complete function
-        response = Complete(model, prompt, options=options, session=session)
-        
-        # Execute the response and collect results
-        result_df = session.table_function(response)
-        result = result_df.collect()[0]['COMPLETE']
-        
-        return result, relative_paths
-    except Exception as e:
-        st.error(f"Error generating answer with snowflake.cortex.Complete function: {e}")
-        return "", relative_paths
+    response = Complete(st.session_state.model_name, prompt)
+    return response, relative_paths
 
 
 
