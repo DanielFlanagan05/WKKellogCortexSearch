@@ -49,145 +49,22 @@ session = st.session_state['session']
 
 # session = create_snowflake_session()
 
-# SQL script to create stage, tables, and functions
-sql_script = """
-CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
-CREATE SCHEMA IF NOT EXISTS DATA;
+def run_sql_file(file_path):
+    with open(file_path, 'r') as file:
+        sql_commands = file.read().split(';')
+        for command in sql_commands:
+            command = command.strip()
+            if command:
+                try:
+                    st.write(f"Executing SQL command: {command[:100]}...")  # Log the SQL command
+                    session.sql(command).collect()  # Execute the SQL command
+                except Exception as e:
+                    st.error(f"Error executing SQL command: {command[:100]}...")
+                    st.error(f"Exception: {e}")
+                    break  # Stop further execution if an error occurs
 
-CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
-RETURNS TABLE (chunk VARCHAR)
-LANGUAGE PYTHON
-RUNTIME_VERSION = '3.9'
-HANDLER = 'pdf_text_chunker'
-PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
-AS
-$$
-from snowflake.snowpark.types import StringType, StructField, StructType
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from snowflake.snowpark.files import SnowflakeFile
-import PyPDF2, io
-import logging
-import pandas as pd
-
-class pdf_text_chunker:
-    def read_pdf(self, file_url: str) -> str:
-        logger = logging.getLogger("udf_logger")
-        logger.info(f"Opening file {file_url}")
-        with SnowflakeFile.open(file_url, 'rb') as f:
-            buffer = io.BytesIO(f.readall())
-        reader = PyPDF2.PdfReader(buffer)
-        text = ""
-        for page in reader.pages:
-            try:
-                text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-            except:
-                text = "Unable to Extract"
-                logger.warn(f"Unable to extract from file {file_url}, page {page}")
-        return text
-
-    def process(self, file_url: str):
-        text = self.read_pdf(file_url)
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size = 1512, chunk_overlap  = 256, length_function = len
-        )
-        chunks = text_splitter.split_text(text)
-        df = pd.DataFrame(chunks, columns=['chunks'])
-        yield from df.itertuples(index=False, name=None)
-$$;
-
-CREATE OR REPLACE STAGE IF NOT EXISTS docs 
-ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' 
-DIRECTORY = ENABLE = TRUE;
-
-CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
-    RELATIVE_PATH VARCHAR(16777216),
-    SIZE NUMBER(38,0),
-    FILE_URL VARCHAR(16777216),
-    SCOPED_FILE_URL VARCHAR(16777216),
-    CHUNK VARCHAR(16777216),
-    CATEGORY VARCHAR(16777216)
-);
-"""
-
-# Run the SQL script when the app starts
-# Run the SQL script when the app starts
-# Run the SQL script when the app starts
-def run_sql_script():
-    sql_commands = [
-        "CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS",
-        "USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS",  # Set the current database
-        "USE SCHEMA DATA",  # Set the current schema to DATA
-        """
-        CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
-        RETURNS TABLE (chunk VARCHAR)
-        LANGUAGE PYTHON
-        RUNTIME_VERSION = '3.9'
-        HANDLER = 'pdf_text_chunker'
-        PACKAGES = ('snowflake-snowpark-python', 'PyPDF2', 'langchain')
-        AS
-        $$
-        from snowflake.snowpark.types import StringType, StructField, StructType
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
-        from snowflake.snowpark.files import SnowflakeFile
-        import PyPDF2, io
-        import logging
-        import pandas as pd
-
-        class pdf_text_chunker:
-            def read_pdf(self, file_url: str) -> str:
-                logger = logging.getLogger("udf_logger")
-                logger.info(f"Opening file {file_url}")
-                with SnowflakeFile.open(file_url, 'rb') as f:
-                    buffer = io.BytesIO(f.readall())
-                reader = PyPDF2.PdfReader(buffer)
-                text = ""
-                for page in reader.pages:
-                    try:
-                        text += page.extract_text().replace('\n', ' ').replace('\0', ' ')
-                    except:
-                        text = "Unable to Extract"
-                        logger.warn(f"Unable to extract from file {file_url}, page {page}")
-                return text
-
-            def process(self, file_url: str):
-                text = self.read_pdf(file_url)
-                text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size = 1512, chunk_overlap  = 256, length_function = len
-                )
-                chunks = text_splitter.split_text(text)
-                df = pd.DataFrame(chunks, columns=['chunks'])
-                yield from df.itertuples(index=False, name=None)
-        $$;
-        """,
-        "CREATE OR REPLACE STAGE IF NOT EXISTS docs ENCRYPTION = TYPE = 'SNOWFLAKE_SSE' DIRECTORY = ENABLE = TRUE",
-        """
-        CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
-            RELATIVE_PATH VARCHAR(16777216),
-            SIZE NUMBER(38,0),
-            FILE_URL VARCHAR(16777216),
-            SCOPED_FILE_URL VARCHAR(16777216),
-            CHUNK VARCHAR(16777216),
-            CATEGORY VARCHAR(16777216)
-        )
-        """
-    ]
-    
-    for command in sql_commands:
-        command = command.strip()
-        if command:
-            try:
-                # Log the SQL command being executed
-                st.write(f"Executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
-                session.sql(command).collect()  # Execute the SQL command
-            except Exception as e:
-                st.error(f"Error executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
-                st.error(f"Exception: {e}")  # Display the exception for debugging
-                break  # Stop further execution if an error occurs
-
-
-
-# Run the SQL setup
-run_sql_script()
+# Run the SQL setup script
+run_sql_file('sql/setup_snowflakecortex.sql')
 
 root = Root(session) 
 
