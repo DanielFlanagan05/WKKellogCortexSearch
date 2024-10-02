@@ -110,11 +110,6 @@ session.sql("USE SCHEMA DATA").collect()
 # Run the SQL setup script
 run_sql_file('sql/setup_snowflakecortex.sql')
 
-
-root = Root(session) 
-
-svc = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
-
 ### Functions
 
 def config_options():
