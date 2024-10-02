@@ -109,38 +109,11 @@ CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
 
 # Run the SQL script when the app starts
 def run_sql_script():
-    sql_commands = [
-        "CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS",
-        "USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS",  # Set the current database
-        "USE SCHEMA DATA",  # Set the current schema to DATA
-        """
-        CREATE STAGE IF NOT EXISTS docs
-        STORAGE_INTEGRATION = 'SNOWFLAKE_SSE'
-        DIRECTORY = (ENABLE = TRUE);
-        """,
-        """
-        CREATE OR REPLACE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
-            RELATIVE_PATH VARCHAR(16777216),
-            SIZE NUMBER(38,0),
-            FILE_URL VARCHAR(16777216),
-            SCOPED_FILE_URL VARCHAR(16777216),
-            CHUNK VARCHAR(16777216),
-            CATEGORY VARCHAR(16777216)
-        )
-        """
-    ]
-    
-    for command in sql_commands:
-        command = command.strip()
-        if command:
-            try:
-                # Log the SQL command being executed
-                st.write(f"Executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
-                session.sql(command).collect()  # Execute the SQL command
-            except Exception as e:
-                st.error(f"Error executing SQL command: {command[:100]}...")  # Show first 100 characters for brevity
-                st.error(f"Exception: {e}")  # Display the exception for debugging
-                break  # Stop further execution if an error occurs
+    try:
+        st.write("Executing SQL script...")
+        session.sql(sql_script).collect()  # Execute the entire SQL script at once
+    except Exception as e:
+        st.error(f"Error executing SQL script: {e}")
 
 # Run the SQL setup
 run_sql_script()
