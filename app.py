@@ -49,6 +49,7 @@ session = st.session_state['session']
 
 # session = create_snowflake_session()
 
+# Run the SQL setup script
 def run_sql_file(file_path):
     with open(file_path, 'r') as file:
         sql_commands = file.read().split(';')
@@ -63,8 +64,13 @@ def run_sql_file(file_path):
                     st.error(f"Exception: {e}")
                     break  # Stop further execution if an error occurs
 
+# Ensure the session is using the correct database and schema
+session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
+session.sql("USE SCHEMA DATA").collect()
+
 # Run the SQL setup script
 run_sql_file('sql/setup_snowflakecortex.sql')
+
 
 root = Root(session) 
 

@@ -1,6 +1,6 @@
--- Creating database and schema
-CREATE DATABASE IF NOT EXISTS CC_QUICKSTART_CORTEX_SEARCH_DOCS;
-CREATE SCHEMA IF NOT EXISTS DATA;
+-- Setting the database and schema context
+USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS;
+USE SCHEMA DATA;
 
 -- Creating a PDF text chunker function
 CREATE OR REPLACE FUNCTION pdf_text_chunker(file_url STRING)
