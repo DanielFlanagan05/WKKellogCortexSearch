@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
 );
 
 
-INSERT INTO docs_chunks_table (relative_path, size, file_url, scoped_file_url, chunk)
+INSERT INTO DOCS_CHUNKS_TABLE (relative_path, size, file_url, scoped_file_url, chunk)
 SELECT relative_path, 
        size,
        file_url, 
@@ -72,7 +72,7 @@ FROM
 
 -- Categorizing documents
 CREATE OR REPLACE TEMPORARY TABLE docs_categories AS WITH unique_documents AS (
-  SELECT DISTINCT relative_path FROM docs_chunks_table
+  SELECT DISTINCT relative_path FROM DOCS_CHUNKS_TABLE
 ),
 docs_category_cte AS (
   SELECT relative_path,
