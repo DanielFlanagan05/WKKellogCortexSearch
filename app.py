@@ -51,18 +51,21 @@ session = st.session_state['session']
 
 # Run the SQL setup script
 def run_sql_file(file_path):
+    st.write(f"Loading SQL file: {file_path}")  # Inform the user that the file is being loaded
     with open(file_path, 'r') as file:
         sql_commands = file.read().split(';')
-        for command in sql_commands:
+        for i, command in enumerate(sql_commands):
             command = command.strip()
             if command:
                 try:
-                    st.write(f"Executing SQL command: {command[:100]}...")  # Log the SQL command
+                    st.write(f"Executing SQL command {i+1}: {command[:100]}...")  # Log the SQL command being executed (first 100 characters)
                     session.sql(command).collect()  # Execute the SQL command
+                    st.write(f"SQL command {i+1} executed successfully.")  # Success message
                 except Exception as e:
-                    st.error(f"Error executing SQL command: {command[:100]}...")
-                    st.error(f"Exception: {e}")
+                    st.error(f"Error executing SQL command {i+1}: {command[:100]}...")
+                    st.error(f"Exception: {e}")  # Display the exception for debugging
                     break  # Stop further execution if an error occurs
+    st.write("Finished executing all SQL commands.")
 
 # Ensure the session is using the correct database and schema
 session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
