@@ -81,7 +81,6 @@ svc = st.session_state['svc']
 
 
 # Run the SQL setup script
-# Run the SQL setup script
 def run_sql_file(file_path):
     # Check if the SQL setup has already been executed in this session
     if 'sql_setup_done' not in st.session_state:
@@ -97,15 +96,17 @@ def run_sql_file(file_path):
 
                 # Check if this is the CREATE OR REPLACE CORTEX SEARCH SERVICE command
                 if "CREATE OR REPLACE CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS" in command:
-                    # Check if the service already exists
-                    session.sql("SHOW SEARCH SERVICES LIKE 'CC_SEARCH_SERVICE_CS';").collect()
-                    service_exists = session.sql("SELECT * FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));").collect()
+                    # Query information_schema to check if the service already exists
+                    service_exists = session.sql("""
+                        SELECT COUNT(*)
+                        FROM information_schema.search_services
+                        WHERE name = 'CC_SEARCH_SERVICE_CS'
+                    """).collect()
 
-                    if service_exists:
+                    if service_exists[0][0] > 0:
                         st.write("Cortex Search Service 'CC_SEARCH_SERVICE_CS' already exists, skipping creation.")
                         continue  # Skip the creation command if the service exists
 
-                # SQL debugging output
                 try:
                     st.write(f"Executing SQL command {i+1}: {command[:100]}...")
                     st.session_state['session'].sql(command).collect()  # Execute the command
@@ -120,6 +121,7 @@ def run_sql_file(file_path):
         st.write("Finished executing all SQL commands.")
     else:
         st.write("SQL setup already completed.")
+
 
 
 
