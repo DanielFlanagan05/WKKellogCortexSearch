@@ -81,12 +81,13 @@ svc = st.session_state['svc']
 
 
 # Run the SQL setup script
+# Run the SQL setup script
 def run_sql_file(file_path):
     # Check if the SQL setup has already been executed in this session
     if 'sql_setup_done' not in st.session_state:
         st.write(f"Loading SQL file: {file_path}")
         with open(file_path, 'r') as file:
-            sql_commands = file.read().split(';') 
+            sql_commands = file.read().split(';')  # Split commands by semicolon
             for i, command in enumerate(sql_commands):
                 command = command.strip()
 
@@ -96,15 +97,18 @@ def run_sql_file(file_path):
 
                 # Check if this is the CREATE OR REPLACE CORTEX SEARCH SERVICE command
                 if "CREATE OR REPLACE CORTEX SEARCH SERVICE CC_SEARCH_SERVICE_CS" in command:
-                    # Check if the service already exists, skip creation if it does
-                    service_exists = session.sql("SHOW SEARCH SERVICES LIKE 'CC_SEARCH_SERVICE_CS';").collect()
+                    # Check if the service already exists
+                    session.sql("SHOW SEARCH SERVICES LIKE 'CC_SEARCH_SERVICE_CS';").collect()
+                    service_exists = session.sql("SELECT * FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));").collect()
+
                     if service_exists:
                         st.write("Cortex Search Service 'CC_SEARCH_SERVICE_CS' already exists, skipping creation.")
-                        continue 
+                        continue  # Skip the creation command if the service exists
 
+                # SQL debugging output
                 try:
                     st.write(f"Executing SQL command {i+1}: {command[:100]}...")
-                    st.session_state['session'].sql(command).collect() 
+                    st.session_state['session'].sql(command).collect()  # Execute the command
                     st.write(f"SQL command {i+1} executed successfully.")
                 except Exception as e:
                     st.error(f"Error executing SQL command {i+1}: {command[:100]}...")
@@ -116,6 +120,7 @@ def run_sql_file(file_path):
         st.write("Finished executing all SQL commands.")
     else:
         st.write("SQL setup already completed.")
+
 
 
 # Ensure the session is using the correct database and schema
