@@ -40,7 +40,7 @@ def add_custom_styles():
         </style>
         """, unsafe_allow_html=True
     )
-    
+
 def add_logo():
     st.markdown(
         "<div class='fixed-header'><h2>Ask KAI!</h2></div>", unsafe_allow_html=True
@@ -82,21 +82,32 @@ svc = st.session_state['svc']
 
 # Run the SQL setup script
 def run_sql_file(file_path):
-    st.write(f"Loading SQL file: {file_path}")
-    with open(file_path, 'r') as file:
-        sql_commands = file.read().split(';')
-        for i, command in enumerate(sql_commands):
-            command = command.strip()
-            if command:
+    # Check if the SQL setup has already been executed in this session
+    if 'sql_setup_done' not in st.session_state:
+        st.write(f"Loading SQL file: {file_path}")
+        with open(file_path, 'r') as file:
+            sql_commands = file.read().split(';')  # Split commands by semicolon
+            for i, command in enumerate(sql_commands):
+                command = command.strip()
+
+                # Skip empty commands
+                if not command:
+                    continue
+
                 try:
                     st.write(f"Executing SQL command {i+1}: {command[:100]}...")
-                    st.session_state['session'].sql(command).collect()  # Use session from session_state
+                    st.session_state['session'].sql(command).collect()  # Execute the command
                     st.write(f"SQL command {i+1} executed successfully.")
                 except Exception as e:
                     st.error(f"Error executing SQL command {i+1}: {command[:100]}...")
                     st.error(f"Exception: {e}")
                     break
-    st.write("Finished executing all SQL commands.")
+
+        # Mark SQL setup as done for this session
+        st.session_state['sql_setup_done'] = True
+        st.write("Finished executing all SQL commands.")
+    else:
+        st.write("SQL setup already completed.")
 
 
 # Ensure the session is using the correct database and schema
@@ -201,4 +212,5 @@ def main():
 
 # Run the app
 if __name__ == "__main__":
+    run_sql_file('sql/setup_snowflakecortex.sql')  # Run SQL setup only once
     main()
