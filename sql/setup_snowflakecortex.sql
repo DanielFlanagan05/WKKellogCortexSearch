@@ -72,20 +72,20 @@ CREATE TABLE IF NOT EXISTS DOCS_CHUNKS_TABLE (
 );
 
 
-INSERT INTO DOCS_CHUNKS_TABLE (relative_path, size, file_url, scoped_file_url, chunk)
-SELECT relative_path, 
-       size,
-       file_url, 
-       build_scoped_file_url(@docs, relative_path) AS scoped_file_url,
-       func.chunk AS chunk
-FROM 
-    directory(@docs),
-    TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path))) AS func;
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM DOCS_CHUNKS_TABLE dct
-    WHERE dct.relative_path = directory.relative_path
-);
+-- INSERT INTO DOCS_CHUNKS_TABLE (relative_path, size, file_url, scoped_file_url, chunk)
+-- SELECT relative_path, 
+--        size,
+--        file_url, 
+--        build_scoped_file_url(@docs, relative_path) AS scoped_file_url,
+--        func.chunk AS chunk
+-- FROM 
+--     directory(@docs),
+--     TABLE(pdf_text_chunker(build_scoped_file_url(@docs, relative_path))) AS func;
+-- WHERE NOT EXISTS (
+--     SELECT 1
+--     FROM DOCS_CHUNKS_TABLE dct
+--     WHERE dct.relative_path = directory.relative_path
+-- );
 
 -- Categorizing documents
 CREATE OR REPLACE TEMPORARY TABLE docs_categories AS WITH unique_documents AS (
