@@ -1,10 +1,11 @@
-import streamlit as st  
+from typing import Literal
+import streamlit as st
+from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark import Session
-from snowflake.core import Root
 from snowflake.cortex import Complete
-from snowflake.snowpark.functions import col
-import pandas as pd
+from snowflake.core import Root
 import json
+import pandas as pd
 
 pd.set_option("max_colwidth", None)
 
@@ -24,29 +25,16 @@ COLUMNS = [
     "category"
 ]
 
-# Load styling and Kellogg AI logo
-def add_custom_styles():
-    st.markdown(
-        """
-        <style>
-            .main {
-                background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
-                color: black;
-            }
-            .stSidebar {
-                background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
-            }
-            /* Additional styling */
-        </style>
-        """, unsafe_allow_html=True
-    )
+# Load custom styles and logo
+def load_custom_styles():
+    with open('css/home.css') as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 def add_logo():
     st.markdown(
-        "<div class='fixed-header'><h2>Ask KAI!</h2></div>", unsafe_allow_html=True
+    "<div class='fixed-header'><h2>Ask KAI!</h2></div>",
+    unsafe_allow_html=True
     )
-add_custom_styles()
-add_logo()
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
@@ -60,7 +48,6 @@ def create_snowflake_session():
         "schema": "DATA",
         "role": st.secrets.get("snowflake", {}).get("role", None),
         "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
-        "schema": st.secrets.get("snowflake", {}).get("schema", None)
     }
     # Creating Snowpark session
     session = Session.builder.configs(connection_parameters).create()
@@ -178,13 +165,6 @@ def get_chat_history():
 
 # Main function
 def main():
-    # Lists available documents
-    # docs_available = st.session.sql("SELECT relative_path, file_url FROM docs_chunks_table").collect()
-    # list_docs = [doc["RELATIVE_PATH"] for doc in docs_available]
-    
-    # st.write("Available Documents:")
-    # st.dataframe(list_docs)
-
     config_options()
     init_messages()
     
@@ -216,5 +196,7 @@ def main():
 
 # Run the app
 if __name__ == "__main__":
+    load_custom_styles()
+    add_logo()
     run_sql_file('sql/setup_snowflakecortex.sql')  # Run SQL setup only once
     main()

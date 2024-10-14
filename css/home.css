@@ -1,0 +1,32 @@
+.main {
+    background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
+    color: black;
+}
+
+.stSidebar {
+    background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
+}
+
+/* Fixed header styling */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #BA0144;
+    z-index: 999;
+    border-bottom: 3px solid black;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fixed-header h2 {
+    margin: 0;
+    text-align: center;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+}
