@@ -66,41 +66,6 @@ if 'root' not in st.session_state:
 svc = st.session_state['svc']
 
 
-
-# Run the SQL setup script
-# Run the SQL setup script
-def run_sql_file(file_path):
-    # Check if the SQL setup has already been executed in this session
-    if 'sql_setup_done' not in st.session_state:
-        st.write(f"Loading SQL file: {file_path}")
-        with open(file_path, 'r') as file:
-            sql_commands = file.read().split(';')  # Split commands by semicolon
-            for i, command in enumerate(sql_commands):
-                command = command.strip()
-
-                # Skip empty commands
-                if not command:
-                    continue
-
-                try:
-                    st.write(f"Executing SQL command {i+1}: {command[:100]}...")
-                    st.session_state['session'].sql(command).collect()  # Use session from session_state
-                    st.write(f"SQL command {i+1} executed successfully.")
-                except Exception as e:
-                    st.error(f"Error executing SQL command {i+1}: {command[:100]}...")
-                    st.error(f"Exception: {e}")
-                    break
-
-        # Mark SQL setup as done for this session
-        st.session_state['sql_setup_done'] = True
-        st.write("Finished executing all SQL commands.")
-    else:
-        st.write("SQL setup already completed.")
-
-
-
-
-
 # Ensure the session is using the correct database and schema
 session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
 session.sql("USE SCHEMA DATA").collect()
@@ -176,27 +141,28 @@ def main():
                 <p>Type a question or select one from below to begin.</p>
             </div>
             """, unsafe_allow_html=True
-        )
+    )
     
-    if prompt := st.chat_input("Ask a question:"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        answer, relative_paths = answer_question(prompt)
-        with st.chat_message("assistant"):
-            st.markdown(answer)
-        
-        st.session_state.messages.append({"role": "assistant", "content": answer})
-    
-    # Show chat messages
+
+    # Display conversation history in order of the messages sent
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+
+    if prompt := st.chat_input("Ask a question:"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        answer, relative_paths = answer_question(prompt)
+        st.session_state.messages.append({"role": "assistant", "content": answer})
+        
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        
+        with st.chat_message("assistant"):
+            st.markdown(answer)
 
 # Run the app
 if __name__ == "__main__":
     load_custom_styles()
     add_logo()
-    # run_sql_file('sql/setup_snowflakecortex.sql')  # Run SQL setup only once
     main()
