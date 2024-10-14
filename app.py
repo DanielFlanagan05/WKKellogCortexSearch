@@ -198,5 +198,5 @@ def main():
 if __name__ == "__main__":
     load_custom_styles()
     add_logo()
-    # run_sql_file('sql/setup_snowflakecortex.sql')  # Run SQL setup only once
+    run_sql_file('sql/setup_snowflakecortex.sql')  # Run SQL setup only once
     main()
