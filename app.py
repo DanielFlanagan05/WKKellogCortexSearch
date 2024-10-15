@@ -25,8 +25,7 @@ COLUMNS = [
     "category"
 ]
 
-svc_file_1 = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
-svc_file_2 = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+
  
 
 # Load custom styles and logo
@@ -66,6 +65,7 @@ if 'session' not in st.session_state:
     st.session_state['session'] = create_snowflake_session()
 session = st.session_state['session']
 
+root = Root(session)
 
 if 'root' not in st.session_state:
     st.session_state['root'] = Root(st.session_state['session'])
@@ -110,7 +110,9 @@ def init_messages():
 #     return response.json()
 
 
- 
+svc_file_1 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+svc_file_2 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+
 def get_similar_chunks_search_service(query):
     # Fetching responses from both services as in Document 1
     try:
