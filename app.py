@@ -154,15 +154,59 @@ def summarize_question_with_history(chat_history, question):
     return Complete(model = st.session_state.model_name, prompt = prompt, session=session)
 
 # Create a prompt for the assistant
+# def create_prompt(myquestion):
+#     chat_history = get_chat_history() if st.session_state.use_chat_history else []
+#     if chat_history:
+#         question_summary = summarize_question_with_history(chat_history, myquestion)
+#         prompt_context = get_similar_chunks_search_service(question_summary)
+#     else:
+#         prompt_context = get_similar_chunks_search_service(myquestion)
+#     prompt = f"<context>{prompt_context}</context><question>{myquestion}</question>Answer:"
+#     return prompt, json.loads(prompt_context)['results']
+
 def create_prompt(myquestion):
-    chat_history = get_chat_history() if st.session_state.use_chat_history else []
-    if chat_history:
-        question_summary = summarize_question_with_history(chat_history, myquestion)
-        prompt_context = get_similar_chunks_search_service(question_summary)
+    if st.session_state.use_chat_history:
+        chat_history = get_chat_history()
+        if chat_history:
+            question_summary = summarize_question_with_history(chat_history, myquestion)
+            response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+            response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+        else:
+            response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+            response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
     else:
-        prompt_context = get_similar_chunks_search_service(myquestion)
-    prompt = f"<context>{prompt_context}</context><question>{myquestion}</question>Answer:"
-    return prompt, json.loads(prompt_context)['results']
+        response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+        response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+ 
+    # Parse the response as JSON using json.loads()
+    try:
+        prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
+        prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
+    except Exception as e:
+        st.error(f"Error parsing search response JSON: {e}")
+        prompt_context_1 = []
+        prompt_context_2 = []
+
+    # Combine results with clear distinction in the prompt
+    prompt = prompt = f"""
+    As an expert financial analyst, provide a detailed analysis of the financial statements (10Q, 10K) of WK Kellogg Co and General Mills from 2019-2023. Focus on these aspects:
+    1. Revenue Trends (Provide a table)
+    2. Net Income 
+    3. Cash Flow Analysis 
+    4. Areas of Investments made by the company (Provide a table)
+    5. Efficiency and Cost Control Strategies: Analyze how WK Kellogg Co and General Mills is working to improve operational efficiency and reduce marginal costs.
+    6. Profit Margins: Break down gross, operating, and net profit margins (Display in a table).
+    7. Key Risk Factors
+
+    **Important**: Even if specific data is not available, leverage pre-trained financial knowledge to provide the most accurate analysis possible based on typical industry standards and practices. Do not state that you lack the context; instead, offer insights and trends based on relevant industry data.  
+    **Important**:Do not cover all aspects at once; address them only when specifically requested.
+    Answer:
+    <context 1>{prompt_context_1}</context 1>
+    <context 2>{prompt_context_2}</context 2>
+    <question>{myquestion}</question>
+    Answer:
+    """
+    return prompt, [prompt_context_1, prompt_context_2]
 
 # Answer the question using the assistant
 def answer_question(myquestion):
