@@ -208,3 +208,31 @@
     padding: 0 20px;
 
 }
+
+/* Custom styles for the welcome message */
+.welcome-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 40vh;
+    background: linear-gradient(135deg, rgba(240, 240, 240, 0.9), rgba(255, 255, 255, 0.9));
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    margin: 20px;
+}
+
+.welcome-heading {
+    color: maroon;
+    font-family: Arial, sans-serif;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.welcome-subheading {
+    color: maroon;
+    font-family: Arial, sans-serif;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
