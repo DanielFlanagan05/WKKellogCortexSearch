@@ -25,6 +25,10 @@ COLUMNS = [
     "category"
 ]
 
+svc_file_1 = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+svc_file_2 = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+ 
+
 # Load custom styles and logo
 def load_custom_styles():
     try:
@@ -96,14 +100,51 @@ def init_messages():
     else:
         st.session_state.show_welcome_message = False
 
+# def get_similar_chunks_search_service(query):
+#     if st.session_state.category_value == "ALL":
+#         response = svc.search(query, COLUMNS, limit=NUM_CHUNKS)
+#     else:
+#         filter_obj = {"@eq": {"category": st.session_state.category_value}}
+#         response = svc.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
+#     st.sidebar.json(response.json())
+#     return response.json()
+
+
+ 
 def get_similar_chunks_search_service(query):
-    if st.session_state.category_value == "ALL":
-        response = svc.search(query, COLUMNS, limit=NUM_CHUNKS)
-    else:
-        filter_obj = {"@eq": {"category": st.session_state.category_value}}
-        response = svc.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
-    st.sidebar.json(response.json())
-    return response.json()
+    # Fetching responses from both services as in Document 1
+    try:
+        if st.session_state.category_value == "ALL":
+            response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
+            response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
+        else:
+            filter_obj = {"@eq": {"category": st.session_state.category_value}}
+            response_file_1 = svc_file_1.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
+            response_file_2 = svc_file_2.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
+        
+        # Parse JSON responses from both services
+        json_response_1 = json.loads(response_file_1.json())
+        json_response_2 = json.loads(response_file_2.json())
+
+        # Combine the 'results' key from both JSON responses
+        combined_response = {
+            "results": json_response_1.get('results', []) + json_response_2.get('results', [])
+        }
+        
+        # Debugging information for both responses
+        if st.session_state.debug:
+            st.sidebar.write(f"Response from service 1: {json_response_1}")
+            st.sidebar.write(f"Response from service 2: {json_response_2}")
+        
+        # Return the combined JSON response
+        return json.dumps(combined_response)
+    
+    except Exception as e:
+        st.error(f"Failed to fetch or parse the service response: {e}")
+        return {}
+
+
+
 
 # Summarize chat history with the current question
 def summarize_question_with_history(chat_history, question):
@@ -131,6 +172,7 @@ def answer_question(myquestion):
 def get_chat_history():
     start_index = max(0, len(st.session_state.messages) - SLIDE_WINDOW)
     return [msg["content"] for msg in st.session_state.messages[start_index:]]
+    
 
 # Main function
 def main():
