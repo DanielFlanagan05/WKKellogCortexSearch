@@ -27,8 +27,13 @@ COLUMNS = [
 
 # Load custom styles and logo
 def load_custom_styles():
-    with open('css/home.css') as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    st.set_page_config(page_title="Ask KAI!", layout="wide", initial_sidebar_state="expanded", theme={"primaryColor":"#ff4d4d", "backgroundColor":"#ffffff", "textColor":"#000000"})
+    try:
+        with open('css/home.css') as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+            st.write("CSS loaded successfully.")
+    except FileNotFoundError:
+        st.write("CSS file not found.")
 
 def add_logo():
     st.markdown(
