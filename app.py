@@ -282,6 +282,10 @@ def main():
             st.markdown(answer)
         st.session_state.messages.append({"role": "assistant", "content": answer})
 
+        # Hides the recommendations after a user submits a prompt
+        st.session_state.show_recommendations = False
+        st.rerun()
+
     # Add a "Start Over" button to reset the app state
     if st.button("Start Over"):
         st.session_state.show_recommendations = True  # Show recommendations again
