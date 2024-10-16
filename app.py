@@ -211,36 +211,83 @@ def get_chat_history():
 
 # Main function
 def main():
+    # Load custom styles specific to the independent web app
+    load_custom_styles()
+    add_logo()
+
+    # Configure sidebar options and initialize messages
     config_options()
     init_messages()
-    
-    if st.session_state.show_welcome_message:
+
+    # Predefined questions (you can customize them if needed)
+    button_texts = [
+        "What was WK Kellogg Co's revenue for 2023?",
+        "How did WK Kellogg Co compete with General Mills?",
+        "What are the top product categories in the cereal industry?",
+        "What are the health trends affecting cereal sales?",
+        "How is the cereal industry adapting to consumer preferences?"
+    ]
+
+    # Show recommendations only when the page is first loaded or when "Start Over" is clicked
+    if 'show_recommendations' not in st.session_state:
+        st.session_state.show_recommendations = True  # To control showing buttons only on the initial page load
+
+    # Initialize selected recommendation state
+    if 'selected_recommendation' not in st.session_state:
+        st.session_state.selected_recommendation = None
+
+    # Display welcome message and recommendations if no conversation has started and recommendations are active
+    if st.session_state.show_recommendations and not st.session_state.messages:
         st.markdown(
             """
-            <div style='text-align:center;'>
-                <h1>Hi! I am Kai, your Cereal Industry Analysis Tool</h1>
-                <p>Type a question or select one from below to begin.</p>
+            <div class='welcome-container'>
+                <h1 class='welcome-heading'>Hi! I am Kai, your Cereal Industry Analysis Tool</h1>
+                <h2 class='welcome-subheading'>Please select a question or type your own to begin.</h2>
             </div>
-            """, unsafe_allow_html=True
-    )
-    
+            """,
+            unsafe_allow_html=True
+        )
 
-    # Display conversation history in order of the messages sent
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+        # Show recommendations as buttons
+        cols = st.columns(len(button_texts))
+        for i, rec in enumerate(button_texts):
+            with cols[i]:
+                if st.button(rec, key=f"recommendation_{i}"):
+                    st.session_state.selected_recommendation = rec
+                    st.session_state.messages.append({"role": "user", "content": rec})  # Add clicked recommendation as user input
+                    answer, _ = answer_question(rec)  # Get the bot's answer to the selected question
+                    st.session_state.messages.append({"role": "assistant", "content": answer})  # Add bot's response to the conversation
 
-    if prompt := st.chat_input("Ask a question:"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        
-        answer, relative_paths = answer_question(prompt)
-        st.session_state.messages.append({"role": "assistant", "content": answer})
-        
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        with st.chat_message("assistant"):
-            st.markdown(answer)
+                    # Once a recommendation is clicked, hide the recommendations
+                    st.session_state.show_recommendations = False
+                    st.rerun()  # Rerun the app to hide buttons and show the conversation
+
+    # If recommendations have been clicked, display conversation history
+    if not st.session_state.show_recommendations:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+
+    # Handling user input from chat box
+    if not st.session_state.show_recommendations:
+        if prompt := st.chat_input("Ask a question:"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
+
+            answer, _ = answer_question(prompt)
+
+            with st.chat_message("user"):
+                st.markdown(prompt)
+
+            with st.chat_message("assistant"):
+                st.markdown(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+
+    # Add a "Start Over" button to reset the app state
+    if st.button("Start Over"):
+        st.session_state.show_recommendations = True  # Show recommendations again
+        st.session_state.messages = []  # Clear conversation history
+        st.rerun()  # Refresh the app
+
 
 # Run the app
 if __name__ == "__main__":
