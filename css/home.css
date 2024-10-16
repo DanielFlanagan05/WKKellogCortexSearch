@@ -8,11 +8,10 @@
     color: white; 
 }
 
-header {
-    background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
-    color: black;
-    z-index: 1;
-}
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+
+
 /* Fixed header styling */
 /* .fixed-header {
     position: fixed;
