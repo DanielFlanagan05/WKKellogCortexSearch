@@ -1,7 +1,7 @@
-.main {
+.stMain {
     background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
     /* color: black; */
-    color: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
+    color: black;
 }
 
 .stSidebar {
