@@ -66,179 +66,117 @@ header {visibility: hidden;}
 /* Add margin to the main content to prevent overlap with the fixed header */
 
 .content {
-
     margin-top: 80px; /* Adjust based on header height */
-
     padding-left: 20px; /* Optional left padding for content */
-
     padding-right: 20px; /* Optional right padding for content */
-
 }
 
 /* Chat container styling */
 
 .st-chat-container {
-
     margin: 20px 0;
-
     padding: 10px;
-
 }
 
 /* Chat message bubbles */
 
 .st-chat-message {
-
     margin: 10px 0;
-
     padding: 15px;
-
     border-radius: 15px;
-
     font-size: 18px;
-
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
     transition: background-color 0.3s ease;
-
 }
 
 /* User messages: Right-aligned with a grey background */
 
 .st-chat-message.user {
-
     background-color: #f0f0f0;
-
     color: black;
-
     text-align: right;
-
     margin-left: auto;
-
     margin-right: 80px;  /* Indent to the right */
-
     border-radius: 15px 15px 0 15px;
-
     padding-left: 15px; /* Optional left padding */
-
 }
 
 /* Assistant messages: Left-aligned with a red background */
 
 .st-chat-message.assistant {
-
     background-color: #ff4d4d;
-
     color: white;
-
     text-align: left;
-
     margin-right: auto;
-
     margin-left: 20px; /* Indent to the left */
-
     border-radius: 15px 0 15px 15px;
-
 }
 
 /* Chat bubbles smooth hover effect */
 
 .st-chat-message:hover {
-
     background-color: #ffe6e6;
-
 }
 
 /* Input box styling */
 
 .st-chat-input input {
-
     padding: 10px;
-
     border-radius: 10px;
-
     border: 1px solid #ff4d4d;
-
     font-size: 16px;
-
 }
 
 /* Button styling (similar to ChatGPT style) */
 
 .stButton > button {
-
     background-color: #ff0000;
-
     border: none;
-
     color: white;
-
     padding: 10px 20px;
-
     text-align: center;
-
     font-size: 16px;
-
     border-radius: 12px;
-
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-
     cursor: pointer;
-
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
-
 }
 
 /* Button hover effect - remove the blue color */
 
 .stButton > button:hover {
-
     background-color: #cc0000;
-
     box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
-
     color: white;  /* Keep the text white */
-
 }
 
 /* Remove default blue hover focus outline */
 
 .stButton > button:focus {
-
     outline: none;
-
 }
 
 /* Sidebar header */
 
 .st-sidebar h2 {
-
     color: #ff0000;
-
 }
 
 /* Sidebar container width */
 
 .css-1d391kg {
-
     width: 350px;
-
 }
 
 /* Adjusting padding and spacing for better alignment */
 
 .st-chat-input {
-
     margin-top: 20px;
-
     margin-bottom: 30px;
-
 }
 
 .st-chat-container {
-
     padding: 0 20px;
-
 }
 
 /* Custom styles for the welcome message */
