@@ -38,15 +38,11 @@ def load_custom_styles():
 
 def add_logo():
     st.markdown(
-        """
-        <div class='fixed-header'>
-            <h2>Ask KAI!</h2>
-        </div>
-        """,
+        "<div class='fixed-header'><img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'><h2>Ask KAI!</h2></div>",
+
         unsafe_allow_html=True
     )
-    # Use st.image to display the logo
-    st.image('resources/images/WKKelloggLogo.jpg', width=200)
+
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
