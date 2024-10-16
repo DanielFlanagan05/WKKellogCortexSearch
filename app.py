@@ -33,7 +33,6 @@ def load_custom_styles():
     try:
         with open('css/home.css') as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-            st.write("CSS loaded successfully.")
     except FileNotFoundError:
         st.write("CSS file not found.")
 
