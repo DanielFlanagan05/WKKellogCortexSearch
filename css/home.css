@@ -24,6 +24,11 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.fixed-header img {
+    margin-top: 5%;
+
+}
+
 .fixed-header h2 {
     margin: 0;
     text-align: center;

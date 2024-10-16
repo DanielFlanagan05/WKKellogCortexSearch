@@ -39,7 +39,6 @@ def load_custom_styles():
 def add_logo():
     st.markdown(
         "<div class='fixed-header'><img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'><h2>Ask KAI!</h2></div>",
-
         unsafe_allow_html=True
     )
 
