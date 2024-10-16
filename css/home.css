@@ -9,6 +9,30 @@
 }
 
 /* Fixed header styling */
+/* .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #BA0144;
+    z-index: 999;
+    border-bottom: 3px solid black;
+    padding: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+} */
+
+
+/* .fixed-header h2 {
+    margin: 0;
+    text-align: center;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+} */
+
 .fixed-header {
     position: fixed;
     top: 0;
@@ -24,19 +48,17 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.fixed-header img, h2 {
-    margin-top: 25px;
-
+.fixed-header img {
+    max-width: 200px;
+    margin-right: 30vw; /* Space between the image and the text */
 }
 
-.fixed-header h2 {
-    margin: 0;
-    text-align: center;
-    color: white;
+/* Styles the Ask Kai! text / header (h2 tag)*/
+#ask-kai {
     font-size: 32px;
     font-weight: bold;
+    color: white;
 }
-
 /* Add margin to the main content to prevent overlap with the fixed header */
 
 .content {
