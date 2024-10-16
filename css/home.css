@@ -1,11 +1,11 @@
 .stMain {
     background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
-    /* color: black; */
     color: black;
 }
 
 .stSidebar {
-    background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
+    background: linear-gradient(to bottom, #cc0000, #a30000, #660000); 
+    color: white; 
 }
 
 /* Fixed header styling */
