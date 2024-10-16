@@ -211,7 +211,7 @@ def get_chat_history():
 
 # Main function
 def main():
-    # Load custom styles specific to the independent web app
+    # Load custom styles and logo
     load_custom_styles()
     add_logo()
 
@@ -219,7 +219,7 @@ def main():
     config_options()
     init_messages()
 
-    # Predefined questions (you can customize them if needed)
+    # Predefined questions for the user to select
     button_texts = [
         "What was WK Kellogg Co's revenue for 2023?",
         "How did WK Kellogg Co compete with General Mills?",
@@ -230,7 +230,7 @@ def main():
 
     # Show recommendations only when the page is first loaded or when "Start Over" is clicked
     if 'show_recommendations' not in st.session_state:
-        st.session_state.show_recommendations = True  # To control showing buttons only on the initial page load
+        st.session_state.show_recommendations = True  
 
     # Initialize selected recommendation state
     if 'selected_recommendation' not in st.session_state:
@@ -248,7 +248,7 @@ def main():
             unsafe_allow_html=True
         )
 
-        # Show recommendations as buttons
+        # Show recommendations as buttons, and chat input below
         cols = st.columns(len(button_texts))
         for i, rec in enumerate(button_texts):
             with cols[i]:
@@ -269,18 +269,18 @@ def main():
                 st.markdown(message["content"])
 
     # Handling user input from chat box
-    if not st.session_state.show_recommendations:
-        if prompt := st.chat_input("Ask a question:"):
-            st.session_state.messages.append({"role": "user", "content": prompt})
+    # if not st.session_state.show_recommendations:
+    if prompt := st.chat_input("Ask a question:"):
+        st.session_state.messages.append({"role": "user", "content": prompt})
 
-            answer, _ = answer_question(prompt)
+        answer, _ = answer_question(prompt)
 
-            with st.chat_message("user"):
-                st.markdown(prompt)
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-            with st.chat_message("assistant"):
-                st.markdown(answer)
-            st.session_state.messages.append({"role": "assistant", "content": answer})
+        with st.chat_message("assistant"):
+            st.markdown(answer)
+        st.session_state.messages.append({"role": "assistant", "content": answer})
 
     # Add a "Start Over" button to reset the app state
     if st.button("Start Over"):
