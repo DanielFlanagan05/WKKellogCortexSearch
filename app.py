@@ -27,6 +27,41 @@ COLUMNS = [
 ]
 
 
+# --- Snowflake connection setup ---
+def create_snowflake_session():
+    # Fetching Snowflake credentials from Streamlit secrets
+    connection_parameters = {
+        "account": st.secrets["snowflake"]["account"],
+        "user": st.secrets["snowflake"]["user"],
+        "password": st.secrets["snowflake"]["password"],
+        "authenticator": st.secrets["snowflake"]["authenticator"],
+        "database": "CC_QUICKSTART_CORTEX_SEARCH_DOCS",
+        "schema": "DATA",
+        "role": st.secrets.get("snowflake", {}).get("role", None),
+        "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
+    }
+    # Creating Snowpark session
+    session = Session.builder.configs(connection_parameters).create()
+    return session
+
+# Ensures only one session is created and used
+if 'session' not in st.session_state:
+    st.session_state['session'] = create_snowflake_session()
+session = st.session_state['session']
+
+root = Root(session)
+
+if 'root' not in st.session_state:
+    st.session_state['root'] = Root(st.session_state['session'])
+    st.session_state['svc'] = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+    
+svc = st.session_state['svc']
+
+
+# Ensure the session is using the correct database and schema
+session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
+session.sql("USE SCHEMA DATA").collect()
+
 ######################################################################
 # Login Related 
 ######################################################################
@@ -115,44 +150,6 @@ def add_logo():
         "<div class='fixed-header'><img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'><h2>Ask KAI!</h2></div>",
         unsafe_allow_html=True
     )
-
-
-# --- Snowflake connection setup ---
-def create_snowflake_session():
-    # Fetching Snowflake credentials from Streamlit secrets
-    connection_parameters = {
-        "account": st.secrets["snowflake"]["account"],
-        "user": st.secrets["snowflake"]["user"],
-        "password": st.secrets["snowflake"]["password"],
-        "authenticator": st.secrets["snowflake"]["authenticator"],
-        "database": "CC_QUICKSTART_CORTEX_SEARCH_DOCS",
-        "schema": "DATA",
-        "role": st.secrets.get("snowflake", {}).get("role", None),
-        "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
-    }
-    # Creating Snowpark session
-    session = Session.builder.configs(connection_parameters).create()
-    return session
-
-# Ensures only one session is created and used
-if 'session' not in st.session_state:
-    st.session_state['session'] = create_snowflake_session()
-session = st.session_state['session']
-
-root = Root(session)
-
-if 'root' not in st.session_state:
-    st.session_state['root'] = Root(st.session_state['session'])
-    st.session_state['svc'] = st.session_state['root'].databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
-    
-svc = st.session_state['svc']
-
-
-# Ensure the session is using the correct database and schema
-session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
-session.sql("USE SCHEMA DATA").collect()
-
-# run_sql_file('sql/setup_snowflakecortex.sql')
 
 ### Functions
 
