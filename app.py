@@ -126,8 +126,15 @@ def run_sql_file(session, file_path):
     try:
         with open(file_path, 'r') as file:
             sql_commands = file.read()  # Read the contents of the SQL file
-        # Execute SQL commands
-        session.sql(sql_commands).collect()  # Run the SQL
+
+        # Split SQL commands by the statement delimiter ";"
+        sql_statements = sql_commands.strip().split(';')
+
+        # Execute each SQL statement individually
+        for sql in sql_statements:
+            sql = sql.strip()  # Remove any leading/trailing spaces
+            if sql:  # Ensure non-empty SQL
+                session.sql(sql).collect()  # Execute each statement
         st.success(f"SQL file {file_path} executed successfully.")
     except FileNotFoundError:
         st.error(f"SQL file {file_path} not found.")
