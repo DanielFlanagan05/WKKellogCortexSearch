@@ -4,6 +4,7 @@ from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark import Session
 from snowflake.cortex import Complete
 from snowflake.core import Root
+import bcrypt
 import json
 import pandas as pd
 
@@ -26,6 +27,79 @@ COLUMNS = [
 ]
 
 
+######################################################################
+# Login Related 
+######################################################################
+
+# Helper function to hash passwords
+def hash_password(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+# Helper function to check passwords
+def check_password(hashed_password, password):
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+# Store login state in session_state
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+# Registration function to store new users
+def register_user(username, password):
+    hashed_password = hash_password(password)
+    try:
+        session.sql(f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')").collect()
+        st.success('User registered successfully!')
+    except Exception as e:
+        st.error(f"Error registering user: {e}")
+
+# Login function to authenticate users
+def login_user(username, password):
+    try:
+        user_data = session.sql(f"SELECT password_hash FROM users WHERE username = '{username}'").collect()
+        if user_data:
+            hashed_password = user_data[0]['PASSWORD_HASH']
+            if check_password(hashed_password, password):
+                st.session_state['logged_in'] = True
+                st.success('Logged in successfully!')
+            else:
+                st.error('Incorrect username or password.')
+        else:
+            st.error('User not found.')
+    except Exception as e:
+        st.error(f"Error logging in: {e}")
+
+# Show the login or registration page if the user is not logged in
+if not st.session_state['logged_in']:
+    st.title("Login or Register")
+    option = st.selectbox('Choose an option', ['Login', 'Register'])
+
+    username = st.text_input('Username')
+    password = st.text_input('Password', type='password')
+
+    if option == 'Register':
+        if st.button('Register'):
+            register_user(username, password)
+
+    elif option == 'Login':
+        if st.button('Login'):
+            login_user(username, password)
+else:
+    # Once logged in, show the main app
+    st.write("Welcome to the app! You are logged in.")
+
+def run_sql_file(session, file_path):
+    try:
+        with open(file_path, 'r') as file:
+            sql_commands = file.read()  # Read the contents of the SQL file
+        # Execute SQL commands
+        session.sql(sql_commands).collect()  # Run the SQL
+        st.success(f"SQL file {file_path} executed successfully.")
+    except FileNotFoundError:
+        st.error(f"SQL file {file_path} not found.")
+    except Exception as e:
+        st.error(f"Error executing SQL file {file_path}: {e}")
+
+######################################################################
  
 
 # Load custom styles and logo
@@ -212,89 +286,92 @@ def get_chat_history():
 # Main function
 def main():
     # Load custom styles and logo
-    load_custom_styles()
-    add_logo()
+    if st.session_state['logged_in']:
+        # load_custom_styles()
+        # add_logo()
 
-    # Configure sidebar options and initialize messages
-    config_options()
-    init_messages()
+        # Configure sidebar options and initialize messages
+        config_options()
+        init_messages()
 
-    # Predefined questions for the user to select
-    button_texts = [
-        "What was WK Kellogg Co's revenue for 2023?",
-        "How did WK Kellogg Co compete with General Mills?",
-        "What are the top product categories in the cereal industry?",
-        "What are the health trends affecting cereal sales?",
-        "How is the cereal industry adapting to consumer preferences?"
-    ]
+        # Predefined questions for the user to select
+        button_texts = [
+            "What was WK Kellogg Co's revenue for 2023?",
+            "How did WK Kellogg Co compete with General Mills?",
+            "What are the top product categories in the cereal industry?",
+            "What are the health trends affecting cereal sales?",
+            "How is the cereal industry adapting to consumer preferences?"
+        ]
 
-    # Show recommendations only when the page is first loaded or when "Start Over" is clicked
-    if 'show_recommendations' not in st.session_state:
-        st.session_state.show_recommendations = True  
+        # Show recommendations only when the page is first loaded or when "Start Over" is clicked
+        if 'show_recommendations' not in st.session_state:
+            st.session_state.show_recommendations = True  
 
-    # Initialize selected recommendation state
-    if 'selected_recommendation' not in st.session_state:
-        st.session_state.selected_recommendation = None
+        # Initialize selected recommendation state
+        if 'selected_recommendation' not in st.session_state:
+            st.session_state.selected_recommendation = None
 
-    # Display welcome message and recommendations if no conversation has started and recommendations are active
-    if st.session_state.show_recommendations and not st.session_state.messages:
-        st.markdown(
-            """
-            <div class='welcome-container'>
-                <h1 class='welcome-heading'>Hi! I am Kai, your Cereal Industry Analysis Tool</h1>
-                <h2 class='welcome-subheading'>Please select a question or type your own to begin.</h2>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Display welcome message and recommendations if no conversation has started and recommendations are active
+        if st.session_state.show_recommendations and not st.session_state.messages:
+            st.markdown(
+                """
+                <div class='welcome-container'>
+                    <h1 class='welcome-heading'>Hi! I am Kai, your Cereal Industry Analysis Tool</h1>
+                    <h2 class='welcome-subheading'>Please select a question or type your own to begin.</h2>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        # Show recommendations as buttons, and chat input below
-        cols = st.columns(len(button_texts))
-        for i, rec in enumerate(button_texts):
-            with cols[i]:
-                if st.button(rec, key=f"recommendation_{i}"):
-                    st.session_state.selected_recommendation = rec
-                    st.session_state.messages.append({"role": "user", "content": rec})  # Add clicked recommendation as user input
-                    answer, _ = answer_question(rec)  # Get the bot's answer to the selected question
-                    st.session_state.messages.append({"role": "assistant", "content": answer})  # Add bot's response to the conversation
+            # Show recommendations as buttons, and chat input below
+            cols = st.columns(len(button_texts))
+            for i, rec in enumerate(button_texts):
+                with cols[i]:
+                    if st.button(rec, key=f"recommendation_{i}"):
+                        st.session_state.selected_recommendation = rec
+                        st.session_state.messages.append({"role": "user", "content": rec})  # Add clicked recommendation as user input
+                        answer, _ = answer_question(rec)  # Get the bot's answer to the selected question
+                        st.session_state.messages.append({"role": "assistant", "content": answer})  # Add bot's response to the conversation
 
-                    # Once a recommendation is clicked, hide the recommendations
-                    st.session_state.show_recommendations = False
-                    st.rerun()  # Rerun the app to hide buttons and show the conversation
+                        # Once a recommendation is clicked, hide the recommendations
+                        st.session_state.show_recommendations = False
+                        st.rerun()  # Rerun the app to hide buttons and show the conversation
 
-    # If recommendations have been clicked, display conversation history
-    if not st.session_state.show_recommendations:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+        # If recommendations have been clicked, display conversation history
+        if not st.session_state.show_recommendations:
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    st.markdown(message["content"])
 
-    # Handling user input from chat box
-    # if not st.session_state.show_recommendations:
-    if prompt := st.chat_input("Ask a question:"):
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Handling user input from chat box
+        # if not st.session_state.show_recommendations:
+        if prompt := st.chat_input("Ask a question:"):
+            st.session_state.messages.append({"role": "user", "content": prompt})
 
-        answer, _ = answer_question(prompt)
+            answer, _ = answer_question(prompt)
 
-        with st.chat_message("user"):
-            st.markdown(prompt)
+            with st.chat_message("user"):
+                st.markdown(prompt)
 
-        with st.chat_message("assistant"):
-            st.markdown(answer)
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+            with st.chat_message("assistant"):
+                st.markdown(answer)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
 
-        # Hides the recommendations after a user submits a prompt
-        st.session_state.show_recommendations = False
-        st.rerun()
+            # Hides the recommendations after a user submits a prompt
+            st.session_state.show_recommendations = False
+            st.rerun()
 
-    # Add a "Start Over" button to reset the app state
-    if st.button("Start Over"):
-        st.session_state.show_recommendations = True  # Show recommendations again
-        st.session_state.messages = []  # Clear conversation history
-        st.rerun()  # Refresh the app
-
+        # Add a "Start Over" button to reset the app state
+        if st.button("Start Over"):
+            st.session_state.show_recommendations = True  # Show recommendations again
+            st.session_state.messages = []  # Clear conversation history
+            st.rerun()  # Refresh the app
+    else:
+        st.warning("Please login to access the app.")
 
 # Run the app
 if __name__ == "__main__":
     load_custom_styles()
     add_logo()
+    run_sql_file(session, 'sql/login.sql')
     main()
