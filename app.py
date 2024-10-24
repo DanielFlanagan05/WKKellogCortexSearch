@@ -66,28 +66,28 @@ session.sql("USE SCHEMA DATA").collect()
 # Login Related 
 ######################################################################
 
-# Helper function to hash passwords
+# Use bcrypt to hash passwords
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# Helper function to check passwords
+# Use bcrypt to check passwords
 def check_password(hashed_password, password):
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-# Store login state in session_state
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-# Registration function to store new users
+# Register new user (add username and password to users table in database)
 def register_user(username, password):
     hashed_password = hash_password(password)
     try:
         session.sql(f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')").collect()
         st.success('User registered successfully!')
+        st.session_state['logged_in'] = True
     except Exception as e:
         st.error(f"Error registering user: {e}")
 
-# Login function to authenticate users
+# Login user by checking username and password against the database
 def login_user(username, password):
     try:
         user_data = session.sql(f"SELECT password_hash FROM users WHERE username = '{username}'").collect()
@@ -119,22 +119,19 @@ if not st.session_state['logged_in']:
         if st.button('Login'):
             login_user(username, password)
 else:
-    # Once logged in, show the main app
-    st.write("Welcome to the app! You are logged in.")
+    st.write("Welcome to KAI! You are logged in.")
 
 def run_sql_file(session, file_path):
     try:
         with open(file_path, 'r') as file:
-            sql_commands = file.read()  # Read the contents of the SQL file
+            sql_commands = file.read()  
 
-        # Split SQL commands by the statement delimiter ";"
         sql_statements = sql_commands.strip().split(';')
 
-        # Execute each SQL statement individually
         for sql in sql_statements:
-            sql = sql.strip()  # Remove any leading/trailing spaces
-            if sql:  # Ensure non-empty SQL
-                session.sql(sql).collect()  # Execute each statement
+            sql = sql.strip()  
+            if sql: 
+                session.sql(sql).collect() 
         st.success(f"SQL file {file_path} executed successfully.")
     except FileNotFoundError:
         st.error(f"SQL file {file_path} not found.")
