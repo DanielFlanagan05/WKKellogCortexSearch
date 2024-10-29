@@ -14,13 +14,13 @@ def register_user(session, username, password):
     hashed_password = hash_password(password)
     try:
         sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
-        st.write(f"Executing query: {sql_query}")  # Debugging: Output query to Streamlit
+        # st.write(f"Executing query: {sql_query}")  # Debugging: Output query to Streamlit
         session.sql(sql_query).collect()  # Execute the SQL query
         st.success('User registered successfully!')
         st.session_state['logged_in'] = True
     except Exception as e:
         st.error(f"Error registering user: {e}")
-        st.write(e)  # Debugging: Output error details to Streamlit
+        # st.write(e)  # Debugging: Output error details to Streamlit
 
 
 
