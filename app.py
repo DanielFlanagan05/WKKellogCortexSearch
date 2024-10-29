@@ -69,44 +69,10 @@ session.sql("USE SCHEMA DATA").collect()
 # Login Related 
 ######################################################################
 
-# # Use bcrypt to hash passwords
-# def hash_password(password):
-#     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-# # Use bcrypt to check passwords
-# def check_password(hashed_password, password):
-#     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
-
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
-
-# # Register new user (add username and password to users table in database)
-# def register_user(username, password):
-#     hashed_password = hash_password(password)
-#     try:
-#         session.sql(f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')").collect()
-#         st.success('User registered successfully!')
-#         st.session_state['logged_in'] = True
-#     except Exception as e:
-#         st.error(f"Error registering user: {e}")
-
-# # Login user by checking username and password against the database
-# def login_user(username, password):
-#     try:
-#         user_data = session.sql(f"SELECT password_hash FROM users WHERE username = '{username}'").collect()
-#         if user_data:
-#             hashed_password = user_data[0]['PASSWORD_HASH']
-#             if check_password(hashed_password, password):
-#                 st.session_state['logged_in'] = True
-#                 st.success('Logged in successfully!')
-#             else:
-#                 st.error('Incorrect username or password.')
-#         else:
-#             st.error('User not found.')
-#     except Exception as e:
-#         st.error(f"Error logging in: {e}")
-
-# # Show the login or registration page if the user is not logged in
+    
+# Show the login or registration page if the user is not logged in
 if not st.session_state['logged_in']:
     st.title("Login or Register")
     option = st.selectbox('Choose an option', ['Login', 'Register'])
