@@ -116,7 +116,7 @@ if not st.session_state['logged_in']:
 
     if option == 'Register':
         if st.button('Register'):
-            register_user(username, password)
+            register_user(session, username, password)
 
     elif option == 'Login':
         if st.button('Login'):
