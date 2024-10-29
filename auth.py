@@ -27,10 +27,7 @@ def validate_password(password):
 
 # Register new user (add username and password to users table in the database)
 def register_user(session, username, password):
-    password_error = validate_password(password)
-    if password_error:
-        st.error(password_error)  
-        return
+
 
     try:
         # Check if the username already exists in the users table
@@ -39,12 +36,16 @@ def register_user(session, username, password):
         if existing_user:
             st.error('Username already exists. Please choose a different username.')
         else:
+            password_error = validate_password(password)
+            if password_error:
+                st.error(password_error)  
+            else:
             # Hash the password and insert the new user
-            hashed_password = hash_password(password)
-            sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
-            session.sql(sql_query).collect()  
-            st.success('User registered successfully!')
-            st.session_state['logged_in'] = True
+                hashed_password = hash_password(password)
+                sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
+                session.sql(sql_query).collect()  
+                st.success('User registered successfully!')
+                st.session_state['logged_in'] = True
 
     except Exception as e:
         st.error(f"Error registering user: {e}")
