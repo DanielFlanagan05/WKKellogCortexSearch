@@ -9,18 +9,25 @@ def hash_password(password):
 def check_password(hashed_password, password):
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-# Register new user (add username and password to users table in database)
+# Register new user (add username and password to users table in the database)
 def register_user(session, username, password):
-    hashed_password = hash_password(password)
     try:
-        sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
-        # st.write(f"Executing query: {sql_query}")  # Debugging: Output query to Streamlit
-        session.sql(sql_query).collect()  # Execute the SQL query
-        st.success('User registered successfully!')
-        st.session_state['logged_in'] = True
+        # Check if the username already exists in the users table
+        existing_user = session.sql(f"SELECT * FROM users WHERE username = '{username}'").collect()
+
+        if existing_user:
+            st.error('Username already exists. Please choose a different username.')
+        else:
+            # Hash the password and insert the new user
+            hashed_password = hash_password(password)
+            sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
+            session.sql(sql_query).collect()  
+            st.success('User registered successfully!')
+            st.session_state['logged_in'] = True
+
     except Exception as e:
         st.error(f"Error registering user: {e}")
-        # st.write(e)  # Debugging: Output error details to Streamlit
+
 
 
 
