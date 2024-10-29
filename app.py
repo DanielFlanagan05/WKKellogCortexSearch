@@ -120,7 +120,7 @@ if not st.session_state['logged_in']:
 
     elif option == 'Login':
         if st.button('Login'):
-            login_user(username, password)
+            login_user(session, username, password)
 else:
     st.write("Welcome to KAI! You are logged in.")
 
