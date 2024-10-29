@@ -13,7 +13,7 @@ def check_password(hashed_password, password):
 def register_user(session, username, password):
     hashed_password = hash_password(password)
     try:
-        session.sql(f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')").collect()
+        session.sql("INSERT INTO users (username, password_hash) VALUES (?, ?)", (username, hashed_password)).collect()
         st.success('User registered successfully!')
         st.session_state['logged_in'] = True
     except Exception as e:
@@ -22,7 +22,7 @@ def register_user(session, username, password):
 # Login user by checking username and password against the database
 def login_user(session, username, password):
     try:
-        user_data = session.sql(f"SELECT password_hash FROM users WHERE username = '{username}'").collect()
+        user_data = session.sql("SELECT password_hash FROM users WHERE username = ?", (username,)).collect()
         if user_data:
             hashed_password = user_data[0]['PASSWORD_HASH']
             if check_password(hashed_password, password):
