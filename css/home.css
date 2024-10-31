@@ -8,6 +8,7 @@
     color: black;
 }
 
+/* This sets the color of the "Session state" text in the sidebar to white for readability */
 .st-emotion-cache-uef7qa p {
     color: #ffffff
 }
@@ -121,7 +122,7 @@ header {visibility: hidden;}
 /* Button styling (similar to ChatGPT style) */
 
 .stButton > button {
-    background-color: #ff0000;
+    background-color: #BA0144;;
     border: none;
     color: white;
     padding: 10px 20px;
@@ -138,7 +139,7 @@ header {visibility: hidden;}
 .stButton > button:hover {
     background-color: #cc0000;
     box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
-    color: white;  /* Keep the text white */
+    color: white; 
 }
 
 /* Remove default blue hover focus outline */
