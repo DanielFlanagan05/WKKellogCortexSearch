@@ -136,7 +136,7 @@ def add_header():
         if logout_button:
             # Update session state to log the user out and rerun
             st.session_state["logged_in"] = False
-            st.experimental_rerun()
+            st.rerun()
 
 
 
