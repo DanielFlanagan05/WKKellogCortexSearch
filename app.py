@@ -345,6 +345,7 @@ def main():
             st.session_state.messages = []  # Clear conversation history
             st.rerun()  # Refresh the app
     else:
+        display_login_register()
         st.warning("Please login to access the app.")
 
 # Run the app
