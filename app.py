@@ -124,17 +124,8 @@ def add_header():
         <div class='fixed-header'>
             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'>
             <h2 style='display: inline;'>Ask KAI!</h2>
-            <button onclick="triggerLogout()" style="position: absolute; right: 20px; top: 10px; background-color: #ff4d4d; color: white; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">Logout</button>
+            <a href="?logout=true" style="position: absolute; right: 20px; top: 10px; background-color: #ff4d4d; color: white; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-decoration: none;">Logout</a>
         </div>
-        
-        <script>
-        function triggerLogout() {
-            // Update URL to include logout=true
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('logout', 'true');
-            window.location.href = currentUrl.toString();  // Redirect to the updated URL
-        }
-        </script>
         """,
         unsafe_allow_html=True
     )
@@ -144,7 +135,8 @@ def add_header():
         st.session_state['logged_in'] = False
         # Clear the query parameter and rerun
         st.query_params.from_dict({})  # Clears all query parameters
-        st.rerun()
+        st.experimental_rerun()
+
 
 
 
