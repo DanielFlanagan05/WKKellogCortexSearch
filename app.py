@@ -31,7 +31,7 @@ COLUMNS = [
 ]
 
 # Reccomendation button possible texts
-button_texts = [
+BUTTON_TEXTS = [
     "What was WK Kellogg Co's revenue for 2023?",
     "How did WK Kellogg Co compete with General Mills?",
     "What are the top product categories in the cereal industry?",
@@ -224,7 +224,7 @@ def get_similar_chunks_search_service(query):
 
 
 def start_over():
-    st.session_state.visible_recommendations = random.sample(button_texts, 3)
+    st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
     st.session_state.messages = [] 
     st.session_state.show_recommendations = True
     st.rerun()  
@@ -319,7 +319,7 @@ def main():
                 unsafe_allow_html=True
             )
         if 'visible_recommendations' not in st.session_state:
-            st.session_state.visible_recommendations = random.sample(button_texts, 3)
+            st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
 
         # Display the three selected recommendations
         if st.session_state.show_recommendations:
