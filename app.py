@@ -8,7 +8,7 @@ import bcrypt
 import json
 import pandas as pd
 
-from auth import login_user, register_user, logout_user
+from auth import login_user, register_user
 
 
 pd.set_option("max_colwidth", None)
@@ -134,7 +134,7 @@ def add_header():
     if 'logged_in' in st.session_state and st.query_params.get("logout") == "true":
         st.session_state['logged_in'] = False
         # Clear the query parameter and rerun
-        st.query_params.from_dict({})  # Clears all query parameters
+        st.query_params.from_dict({})  
         st.rerun()
 
 

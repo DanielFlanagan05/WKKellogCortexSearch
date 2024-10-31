@@ -69,7 +69,3 @@ def login_user(session, username, password):
     except Exception as e:
         st.error(f"Error logging in: {e}")
 
-# Logout the user by resetting the logged_in session state
-def logout_user():
-    st.session_state['logged_in'] = False
-    st.success("Logged out successfully!")
