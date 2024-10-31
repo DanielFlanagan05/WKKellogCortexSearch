@@ -357,7 +357,7 @@ def main():
             st.session_state.visible_recommendations = random.sample(button_texts, 3)
             st.session_state.messages = []  # Clear conversation history
             st.session_state.show_recommendations = True
-            st.experimental_rerun()  # Refresh to display new recommendations
+            st.rerun()  # Refresh to display new recommendations
     else:
         display_login_register()
         st.warning("Please login to access the app.")
