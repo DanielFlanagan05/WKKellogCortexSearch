@@ -1,3 +1,4 @@
+import random
 from typing import Literal
 import streamlit as st
 from snowflake.snowpark.context import get_active_session
@@ -274,12 +275,23 @@ def main():
         init_messages()
 
         # Predefined questions for the user to select
+        # Full pool of potential button texts
         button_texts = [
             "What was WK Kellogg Co's revenue for 2023?",
             "How did WK Kellogg Co compete with General Mills?",
             "What are the top product categories in the cereal industry?",
             "What are the health trends affecting cereal sales?",
-            "How is the cereal industry adapting to consumer preferences?"
+            "How is the cereal industry adapting to consumer preferences?",
+            "How has WK Kellogg Co's market share evolved from 2019 to 2023?",
+            "What are the key sustainability initiatives WK Kellogg Co has implemented?",
+            "What are the major trends in consumer preferences affecting cereal sales?",
+            "What are the top-performing products for General Mills in recent years?",
+            "How has the COVID-19 pandemic impacted the cereal industry?",
+            "What are the key risks facing the cereal industry?",
+            "How have health-conscious trends influenced cereal product development?",
+            "What are the major marketing strategies used by WK Kellogg Co?",
+            "How has General Mills invested in product innovation?",
+            "What are the revenue growth projections for the cereal industry through 2025?"
         ]
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
@@ -301,20 +313,20 @@ def main():
                 """,
                 unsafe_allow_html=True
             )
+        if 'visible_recommendations' not in st.session_state:
+            st.session_state.visible_recommendations = random.sample(button_texts, 3)
 
-            # Show recommendations as buttons, and chat input below
-            cols = st.columns(len(button_texts))
-            for i, rec in enumerate(button_texts):
-                with cols[i]:
-                    if st.button(rec, key=f"recommendation_{i}"):
-                        st.session_state.selected_recommendation = rec
-                        st.session_state.messages.append({"role": "user", "content": rec})  # Add clicked recommendation as user input
-                        answer, _ = answer_question(rec)  # Get the bot's answer to the selected question
-                        st.session_state.messages.append({"role": "assistant", "content": answer})  # Add bot's response to the conversation
-
-                        # Once a recommendation is clicked, hide the recommendations
-                        st.session_state.show_recommendations = False
-                        st.rerun()  # Rerun the app to hide buttons and show the conversation
+        # Display the three selected recommendations
+        cols = st.columns(3)
+        for i, rec in enumerate(st.session_state.visible_recommendations):
+            with cols[i]:
+                if st.button(rec, key=f"recommendation_{i}"):
+                    st.session_state.selected_recommendation = rec
+                    st.session_state.messages.append({"role": "user", "content": rec})
+                    answer, _ = answer_question(rec)
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state.show_recommendations = False
+                    st.rerun()  
 
         # If recommendations have been clicked, display conversation history
         if not st.session_state.show_recommendations:
@@ -339,11 +351,12 @@ def main():
             st.session_state.show_recommendations = False
             st.rerun()
 
-        # Add a "Start Over" button to reset the app state
+        # Reset recommendations when "Start Over" button is clicked
         if st.button("Start Over"):
-            st.session_state.show_recommendations = True  # Show recommendations again
+            st.session_state.visible_recommendations = random.sample(button_texts, 3)
             st.session_state.messages = []  # Clear conversation history
-            st.rerun()  # Refresh the app
+            st.session_state.show_recommendations = True
+            st.experimental_rerun()  # Refresh to display new recommendations
     else:
         display_login_register()
         st.warning("Please login to access the app.")
