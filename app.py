@@ -286,7 +286,7 @@ def start_over():
     st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
     st.session_state.show_recommendations = True
     init_messages()
-    st.rerun()  # Refresh to display new recommendations
+    st.session_state["reset_requested"] = True  
 
 def main():
     # Load custom styles and logo
@@ -295,8 +295,10 @@ def main():
         config_options()
         init_messages()
 
-        # Predefined questions for the user to select
-
+        # Checks for reset flag in session state. Useful for avoiding calling rerun in sidebar which streamlit can't fulfill yet.
+        if st.session_state.get("reset_requested", False):
+            st.session_state["reset_requested"] = False
+            st.rerun()
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
         if 'show_recommendations' not in st.session_state:
@@ -358,10 +360,6 @@ def main():
 
         # Reset recommendations when "Start Over" button is clicked
         if st.button("Start Over"):
-            # st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
-            # st.session_state.messages = []  # Clear conversation history
-            # st.session_state.show_recommendations = True
-            # st.rerun()  # Refresh to display new recommendations
             start_over()
     else:
         display_login_register()
