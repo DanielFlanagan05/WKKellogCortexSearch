@@ -140,10 +140,10 @@ def add_header():
     )
 
     # Check for the logout query parameter in Python
-    if 'logged_in' in st.session_state and st.get_query_params().get("logout") == ["true"]:
+    if 'logged_in' in st.session_state and st.query_params().get("logout") == ["true"]:
         st.session_state['logged_in'] = False
         # Clear the logout query parameter and rerun
-        st.set_query_params()  # Clears the query parameters
+        st.query_params()  # Clears the query parameters
         st.rerun()
 
 
