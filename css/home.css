@@ -97,7 +97,7 @@ header {visibility: hidden;}
 
 .st-chat-message.assistant {
     background-color: #ff4d4d;
-    color: white;
+    color: rgb(0, 0, 0);
     text-align: left;
     margin-right: auto;
     margin-left: 20px; /* Indent to the left */
