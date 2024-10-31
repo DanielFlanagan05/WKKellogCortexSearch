@@ -93,6 +93,10 @@ header {visibility: hidden;}
     padding-left: 15px; /* Optional left padding */
 }
 
+.stMarkdown {
+    color: black;
+}
+
 /* Assistant messages: Left-aligned with a red background */
 
 .st-chat-message.assistant {
