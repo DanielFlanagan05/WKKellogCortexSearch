@@ -30,25 +30,6 @@ COLUMNS = [
     "category"
 ]
 
-# Reccomendation button possible texts
-BUTTON_TEXTS = [
-    "What was WK Kellogg Co's revenue for 2023?",
-    "How did WK Kellogg Co compete with General Mills?",
-    "What are the top product categories in the cereal industry?",
-    "What are the health trends affecting cereal sales?",
-    "How is the cereal industry adapting to consumer preferences?",
-    "How has WK Kellogg Co's market share evolved from 2019 to 2023?",
-    "What are the key sustainability initiatives WK Kellogg Co has implemented?",
-    "What are the major trends in consumer preferences affecting cereal sales?",
-    "What are the top-performing products for General Mills in recent years?",
-    "How has the COVID-19 pandemic impacted the cereal industry?",
-    "What are the key risks facing the cereal industry?",
-    "How have health-conscious trends influenced cereal product development?",
-    "What are the major marketing strategies used by WK Kellogg Co?",
-    "How has General Mills invested in product innovation?",
-    "What are the revenue growth projections for the cereal industry through 2025?"
-]
-
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
@@ -177,7 +158,7 @@ def config_options():
     st.sidebar.selectbox('Select product category', cat_list, key="category_value")
     st.sidebar.checkbox('Remember chat history?', key="use_chat_history", value=True)
     st.sidebar.checkbox('Show debug info', key="debug", value=True)
-    st.sidebar.button("Start Over", key="clear_conversation", on_click=start_over())
+    st.sidebar.button("Start Over", key="clear_conversation", on_click=init_messages)
     st.sidebar.expander("Session State").write(st.session_state)
 
 def init_messages():
@@ -224,10 +205,6 @@ def get_similar_chunks_search_service(query):
 
 
 def start_over():
-    st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
-    st.session_state.messages = [] 
-    st.session_state.show_recommendations = True
-    st.rerun()  
 
 # Summarize chat history with the current question
 def summarize_question_with_history(chat_history, question):
@@ -298,6 +275,24 @@ def main():
         init_messages()
 
         # Predefined questions for the user to select
+        # Full pool of potential button texts
+        button_texts = [
+            "What was WK Kellogg Co's revenue for 2023?",
+            "How did WK Kellogg Co compete with General Mills?",
+            "What are the top product categories in the cereal industry?",
+            "What are the health trends affecting cereal sales?",
+            "How is the cereal industry adapting to consumer preferences?",
+            "How has WK Kellogg Co's market share evolved from 2019 to 2023?",
+            "What are the key sustainability initiatives WK Kellogg Co has implemented?",
+            "What are the major trends in consumer preferences affecting cereal sales?",
+            "What are the top-performing products for General Mills in recent years?",
+            "How has the COVID-19 pandemic impacted the cereal industry?",
+            "What are the key risks facing the cereal industry?",
+            "How have health-conscious trends influenced cereal product development?",
+            "What are the major marketing strategies used by WK Kellogg Co?",
+            "How has General Mills invested in product innovation?",
+            "What are the revenue growth projections for the cereal industry through 2025?"
+        ]
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
         if 'show_recommendations' not in st.session_state:
@@ -319,7 +314,7 @@ def main():
                 unsafe_allow_html=True
             )
         if 'visible_recommendations' not in st.session_state:
-            st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
+            st.session_state.visible_recommendations = random.sample(button_texts, 3)
 
         # Display the three selected recommendations
         if st.session_state.show_recommendations:
@@ -359,7 +354,10 @@ def main():
 
         # Reset recommendations when "Start Over" button is clicked
         if st.button("Start Over"):
-            start_over()
+            st.session_state.visible_recommendations = random.sample(button_texts, 3)
+            st.session_state.messages = []  # Clear conversation history
+            st.session_state.show_recommendations = True
+            st.rerun()  # Refresh to display new recommendations
     else:
         display_login_register()
         st.warning("Please login to access the app.")
