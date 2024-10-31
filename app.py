@@ -130,7 +130,7 @@ def add_header():
     )
     # Show the "Logout" button if the user is logged in
     if st.session_state.get("logged_in", False):
-        if st.button("Logout", key="logout_button"):
+        if st.button("Logout", key="KAI_logout_button"):
             logout_user()
 
 # Call this function at the start of the main function or where appropriate in app.py
