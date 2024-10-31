@@ -119,19 +119,29 @@ def load_custom_styles():
         st.write("CSS file not found.")
 
 def add_header():
+    # Display the header with a Logout button when logged in
     st.markdown(
         """
         <div class='fixed-header'>
             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'>
-            <h2>Ask KAI!</h2>
+            <h2 style='display: inline;'>Ask KAI!</h2>
+            <button onclick="logout()" id="logout_button" style="margin-left:auto; background-color: #ff4d4d; color: white; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">Logout</button>
         </div>
+        
+        <script>
+        function logout() {
+            // Set a Streamlit component action to trigger logout
+            document.getElementById("streamlit_logout_button").click();
+        }
+        </script>
         """,
         unsafe_allow_html=True
     )
-    # Show the "Logout" button if the user is logged in
+
+    # Create a hidden Streamlit button to trigger logout
     if st.session_state.get("logged_in", False):
-        if st.button("Logout", key="KAI_logout_button"):
-            logout_user()
+        if st.button("Hidden Logout Trigger", key="streamlit_logout_button", on_click=logout_user):
+            pass  # This button is hidden but acts as a callback trigger for logout
 
 # Call this function at the start of the main function or where appropriate in app.py
 add_header()
