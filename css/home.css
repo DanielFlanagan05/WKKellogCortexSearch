@@ -48,7 +48,7 @@ header {visibility: hidden;}
 
 /* Make login or register text black to appear better on white bg */
 #login-or-register {
-    color:rgba(0, 0, 0, 0.1)
+    color:rgba(0, 0, 0, 0.8)
 }
 
 /* Add margin to the main content to prevent overlap with the fixed header */
