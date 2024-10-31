@@ -8,7 +8,7 @@ import bcrypt
 import json
 import pandas as pd
 
-from auth import login_user, register_user
+from auth import login_user, register_user, logout_user
 
 
 pd.set_option("max_colwidth", None)
@@ -101,7 +101,7 @@ def run_sql_file(session, file_path):
             sql = sql.strip()  
             if sql: 
                 session.sql(sql).collect() 
-        st.success(f"SQL file {file_path} executed successfully.")
+        # st.success(f"SQL file {file_path} executed successfully.")
     except FileNotFoundError:
         st.error(f"SQL file {file_path} not found.")
     except Exception as e:
@@ -118,11 +118,23 @@ def load_custom_styles():
     except FileNotFoundError:
         st.write("CSS file not found.")
 
-def add_logo():
+def add_header():
     st.markdown(
-        "<div class='fixed-header'><img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'><h2>Ask KAI!</h2></div>",
+        """
+        <div class='fixed-header'>
+            <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'>
+            <h2>Ask KAI!</h2>
+        </div>
+        """,
         unsafe_allow_html=True
     )
+    # Show the "Logout" button if the user is logged in
+    if st.session_state.get("logged_in", False):
+        if st.button("Logout", key="logout_button"):
+            logout_user()
+
+# Call this function at the start of the main function or where appropriate in app.py
+add_header()
 
 ### Functions
 
@@ -143,16 +155,6 @@ def init_messages():
         st.session_state.show_welcome_message = True
     else:
         st.session_state.show_welcome_message = False
-
-# def get_similar_chunks_search_service(query):
-#     if st.session_state.category_value == "ALL":
-#         response = svc.search(query, COLUMNS, limit=NUM_CHUNKS)
-#     else:
-#         filter_obj = {"@eq": {"category": st.session_state.category_value}}
-#         response = svc.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
-#     st.sidebar.json(response.json())
-#     return response.json()
-
 
 svc_file_1 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 svc_file_2 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
@@ -342,6 +344,6 @@ def main():
 # Run the app
 if __name__ == "__main__":
     load_custom_styles()
-    add_logo()
+    add_header()
     run_sql_file(session, 'sql/login.sql')
     main()
