@@ -119,24 +119,31 @@ def load_custom_styles():
         st.write("CSS file not found.")
 
 def add_header():
-    # Display the header with a Logout button
     st.markdown(
         """
         <div class='fixed-header'>
             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'>
             <h2 style='display: inline;'>Ask KAI!</h2>
+            <button onclick="logout()" id="logout_button" style="position: absolute; right: 20px; top: 10px; background-color: #ff4d4d; color: white; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">Logout</button>
         </div>
+        
+        <script>
+        function logout() {
+            // Set a cookie or trigger a session reload to simulate logout
+            document.cookie = "logout=true; path=/";
+            window.location.reload();
+        }
+        </script>
         """,
         unsafe_allow_html=True
     )
 
-    # Place the Logout button to the right if the user is logged in
-    if st.session_state.get("logged_in", False):
-        logout_button = st.button("Logout", key="logout_button")
-        if logout_button:
-            # Update session state to log the user out and rerun
-            st.session_state["logged_in"] = False
-            st.rerun()
+    # Check if the logout cookie is set and handle logout in session state
+    if 'logged_in' in st.session_state and "logout=true" in st.experimental_get_query_params():
+        st.session_state['logged_in'] = False
+        st.experimental_set_query_params()  # Clear the URL parameter
+        st.rerun()  # Reload page to reflect the logout state
+
 
 
 
