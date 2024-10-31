@@ -203,7 +203,16 @@ header {visibility: hidden;}
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.fixed-header #logout_button {
-    margin-left: auto;
-    margin-right: 20px; /* Adjust spacing as needed */
+#logout_button {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    background-color: #ff4d4d;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
 }

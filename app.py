@@ -122,9 +122,9 @@ def add_header():
     st.markdown(
         """
         <div class='fixed-header'>
-            <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo' style='max-width: 200px; margin-right: 10px;'>
-            <h2 style='display: inline;'>Ask KAI!</h2>
-            <a href="?logout=true" target="_self" style="position: absolute; right: 20px; top: 10px; background-color: #ff4d4d; color: white; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-decoration: none;">Logout</a>
+            <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
+            <h2 id='ask-kai'>Ask KAI!</h2>
+            <a href="?logout=true" target="_self" id="logout_button">Logout</a>
         </div>
         """,
         unsafe_allow_html=True
