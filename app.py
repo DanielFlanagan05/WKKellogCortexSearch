@@ -131,7 +131,7 @@ def add_header():
         <script>
         function logout() {
             // Set a Streamlit component action to trigger logout
-            document.getElementById("streamlit_logout_button").click();
+            document.getElementById("KAI_logout_button").click();
         }
         </script>
         """,
@@ -140,7 +140,7 @@ def add_header():
 
     # Create a hidden Streamlit button to trigger logout
     if st.session_state.get("logged_in", False):
-        if st.button("Hidden Logout Trigger", key="streamlit_logout_button", on_click=logout_user):
+        if st.button("Hidden Logout Trigger", key="KAI_logout_button", on_click=logout_user):
             pass  # This button is hidden but acts as a callback trigger for logout
 
 # Call this function at the start of the main function or where appropriate in app.py

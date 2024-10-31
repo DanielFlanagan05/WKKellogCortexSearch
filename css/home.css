@@ -187,3 +187,23 @@ header {visibility: hidden;}
     font-size: 1.8em;
     margin-bottom: 15px;
 }
+
+/* CSS for positioning Logout button in header */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10vh;
+    background-color: #BA0144;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fixed-header #logout_button {
+    margin-left: auto;
+    margin-right: 20px; /* Adjust spacing as needed */
+}
