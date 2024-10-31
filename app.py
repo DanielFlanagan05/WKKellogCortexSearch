@@ -176,7 +176,7 @@ def config_options():
     st.sidebar.selectbox('Select product category', cat_list, key="category_value")
     st.sidebar.checkbox('Remember chat history?', key="use_chat_history", value=True)
     st.sidebar.checkbox('Show debug info', key="debug", value=True)
-    st.sidebar.button("Start Over", key="clear_conversation", on_click=init_messages, on_click=start_over)
+    st.sidebar.button("Start Over", key="clear_conversation", on_click=start_over)
     st.sidebar.expander("Session State").write(st.session_state)
 
 def init_messages():
@@ -284,8 +284,8 @@ def get_chat_history():
     
 def start_over():
     st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
-    st.session_state.messages = []  # Clear conversation history
     st.session_state.show_recommendations = True
+    init_messages()
     st.rerun()  # Refresh to display new recommendations
 
 def main():
