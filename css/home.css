@@ -45,8 +45,13 @@ header {visibility: hidden;}
     color: white;
     z-index: 2; 
 }
-/* Add margin to the main content to prevent overlap with the fixed header */
 
+/* Make login or register text black to appear better on white bg */
+#login-or-register {
+    color:rgba(0, 0, 0, 0.1)
+}
+
+/* Add margin to the main content to prevent overlap with the fixed header */
 .content {
     margin-top: 80px; 
     padding-left: 20px; 
