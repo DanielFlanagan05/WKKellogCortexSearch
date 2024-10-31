@@ -300,7 +300,7 @@ def main():
 
         # Initialize selected recommendation state
         if 'selected_recommendation' not in st.session_state:
-            st.session_state.selected_recommendation = None
+            st.session_state.visible_recommendations = random.sample(button_texts, 3)
 
         # Display welcome message and recommendations if no conversation has started and recommendations are active
         if st.session_state.show_recommendations and not st.session_state.messages:
@@ -317,16 +317,19 @@ def main():
             st.session_state.visible_recommendations = random.sample(button_texts, 3)
 
         # Display the three selected recommendations
-        cols = st.columns(3)
-        for i, rec in enumerate(st.session_state.visible_recommendations):
-            with cols[i]:
-                if st.button(rec, key=f"recommendation_{i}"):
-                    st.session_state.selected_recommendation = rec
-                    st.session_state.messages.append({"role": "user", "content": rec})
-                    answer, _ = answer_question(rec)
-                    st.session_state.messages.append({"role": "assistant", "content": answer})
-                    st.session_state.show_recommendations = False
-                    st.rerun()  
+        if st.session_state.show_recommendations:
+            cols = st.columns(3)
+            for i, rec in enumerate(st.session_state.visible_recommendations):
+                with cols[i]:
+                    if st.button(rec, key=f"recommendation_{i}"):
+                        st.session_state.selected_recommendation = rec
+                        st.session_state.messages.append({"role": "user", "content": rec})
+                        answer, _ = answer_question(rec)  # Function to get the answer (ensure it exists)
+                        st.session_state.messages.append({"role": "assistant", "content": answer})
+
+                        # Hide recommendations after a button is clicked and re-run to refresh display
+                        st.session_state.show_recommendations = False
+                        st.experimental_rerun()
 
         # If recommendations have been clicked, display conversation history
         if not st.session_state.show_recommendations:
@@ -337,17 +340,15 @@ def main():
         # Handling user input from chat box
         if prompt := st.chat_input("Ask a question:"):
             st.session_state.messages.append({"role": "user", "content": prompt})
-
-            answer, _ = answer_question(prompt)
+            answer, _ = answer_question(prompt)  # Ensure this function exists
 
             with st.chat_message("user"):
                 st.markdown(prompt)
-
             with st.chat_message("assistant"):
                 st.markdown(answer)
             st.session_state.messages.append({"role": "assistant", "content": answer})
 
-            # Hides the recommendations after a user submits a prompt
+            # Hide recommendations after any input and refresh
             st.session_state.show_recommendations = False
             st.rerun()
 
@@ -356,7 +357,7 @@ def main():
             st.session_state.visible_recommendations = random.sample(button_texts, 3)
             st.session_state.messages = []  # Clear conversation history
             st.session_state.show_recommendations = True
-            st.experimental_rerun()  # Refresh to display new recommendations
+            st.rerun()  # Refresh to display new recommendations
     else:
         display_login_register()
         st.warning("Please login to access the app.")
