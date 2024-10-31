@@ -1,15 +1,16 @@
 .stMain {
-    background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
+    background: linear-gradient(135deg, rgba(255, 240, 240, 0.9), rgba(240, 240, 240, 0.9));
     color: black;
 }
 
 .stSidebar {
-    background: linear-gradient(to bottom, #764d4d, #9e2626, #625151); 
-    color: white; 
+    background: linear-gradient(to bottom, #ffcccc, #ff4d4d, #ffffff);
+    color: black;
 }
 
 #MainMenu {visibility: hidden;}
 header {visibility: hidden;}
+
 /* TODO: Remove comment before demo */ 
 /* footer {visibility: hidden;} */
 
@@ -47,9 +48,9 @@ header {visibility: hidden;}
 /* Add margin to the main content to prevent overlap with the fixed header */
 
 .content {
-    margin-top: 80px; /* Adjust based on header height */
-    padding-left: 20px; /* Optional left padding for content */
-    padding-right: 20px; /* Optional right padding for content */
+    margin-top: 80px; 
+    padding-left: 20px; 
+    padding-right: 20px; 
 }
 
 /* Chat container styling */
