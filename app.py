@@ -135,7 +135,7 @@ def add_header():
         st.session_state['logged_in'] = False
         # Clear the query parameter and rerun
         st.query_params.from_dict({})  # Clears all query parameters
-        st.experimental_rerun()
+        st.rerun()
 
 
 
