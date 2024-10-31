@@ -71,9 +71,11 @@ session.sql("USE SCHEMA DATA").collect()
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
-    
-# Show the login or registration page if the user is not logged in
-if not st.session_state['logged_in']:
+if 'show_welcome' not in st.session_state:
+    st.session_state['show_welcome'] = False
+
+# Function to display login/register interface
+def display_login_register():
     st.title("Login or Register")
     option = st.selectbox('Choose an option', ['Login', 'Register'])
 
@@ -87,8 +89,9 @@ if not st.session_state['logged_in']:
     elif option == 'Login':
         if st.button('Login'):
             login_user(session, username, password)
-else:
-    st.write("Welcome to KAI! You are logged in.")
+            st.session_state['logged_in'] = True
+            st.session_state['show_welcome'] = True  
+            st.rerun()  
 
 def run_sql_file(session, file_path):
     try:
@@ -263,13 +266,9 @@ def get_chat_history():
     return [msg["content"] for msg in st.session_state.messages[start_index:]]
     
 
-# Main function
 def main():
     # Load custom styles and logo
     if st.session_state['logged_in']:
-        # load_custom_styles()
-        # add_logo()
-
         # Configure sidebar options and initialize messages
         config_options()
         init_messages()
@@ -324,7 +323,6 @@ def main():
                     st.markdown(message["content"])
 
         # Handling user input from chat box
-        # if not st.session_state.show_recommendations:
         if prompt := st.chat_input("Ask a question:"):
             st.session_state.messages.append({"role": "user", "content": prompt})
 
