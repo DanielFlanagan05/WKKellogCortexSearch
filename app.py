@@ -30,6 +30,25 @@ COLUMNS = [
     "category"
 ]
 
+# Reccomendation button possible texts
+button_texts = [
+    "What was WK Kellogg Co's revenue for 2023?",
+    "How did WK Kellogg Co compete with General Mills?",
+    "What are the top product categories in the cereal industry?",
+    "What are the health trends affecting cereal sales?",
+    "How is the cereal industry adapting to consumer preferences?",
+    "How has WK Kellogg Co's market share evolved from 2019 to 2023?",
+    "What are the key sustainability initiatives WK Kellogg Co has implemented?",
+    "What are the major trends in consumer preferences affecting cereal sales?",
+    "What are the top-performing products for General Mills in recent years?",
+    "How has the COVID-19 pandemic impacted the cereal industry?",
+    "What are the key risks facing the cereal industry?",
+    "How have health-conscious trends influenced cereal product development?",
+    "What are the major marketing strategies used by WK Kellogg Co?",
+    "How has General Mills invested in product innovation?",
+    "What are the revenue growth projections for the cereal industry through 2025?"
+]
+
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
@@ -279,24 +298,6 @@ def main():
         init_messages()
 
         # Predefined questions for the user to select
-        # Full pool of potential button texts
-        button_texts = [
-            "What was WK Kellogg Co's revenue for 2023?",
-            "How did WK Kellogg Co compete with General Mills?",
-            "What are the top product categories in the cereal industry?",
-            "What are the health trends affecting cereal sales?",
-            "How is the cereal industry adapting to consumer preferences?",
-            "How has WK Kellogg Co's market share evolved from 2019 to 2023?",
-            "What are the key sustainability initiatives WK Kellogg Co has implemented?",
-            "What are the major trends in consumer preferences affecting cereal sales?",
-            "What are the top-performing products for General Mills in recent years?",
-            "How has the COVID-19 pandemic impacted the cereal industry?",
-            "What are the key risks facing the cereal industry?",
-            "How have health-conscious trends influenced cereal product development?",
-            "What are the major marketing strategies used by WK Kellogg Co?",
-            "How has General Mills invested in product innovation?",
-            "What are the revenue growth projections for the cereal industry through 2025?"
-        ]
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
         if 'show_recommendations' not in st.session_state:
