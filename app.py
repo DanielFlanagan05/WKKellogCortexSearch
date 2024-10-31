@@ -158,7 +158,7 @@ def config_options():
     st.sidebar.selectbox('Select product category', cat_list, key="category_value")
     st.sidebar.checkbox('Remember chat history?', key="use_chat_history", value=True)
     st.sidebar.checkbox('Show debug info', key="debug", value=True)
-    st.sidebar.button("Start Over", key="clear_conversation", on_click=init_messages)
+    st.sidebar.button("Start Over", key="clear_conversation", on_click=start_over())
     st.sidebar.expander("Session State").write(st.session_state)
 
 def init_messages():
@@ -204,7 +204,11 @@ def get_similar_chunks_search_service(query):
         return {}
 
 
-
+def start_over():
+    st.session_state.visible_recommendations = random.sample(button_texts, 3)
+    st.session_state.messages = [] 
+    st.session_state.show_recommendations = True
+    st.rerun()  
 
 # Summarize chat history with the current question
 def summarize_question_with_history(chat_history, question):
@@ -354,10 +358,7 @@ def main():
 
         # Reset recommendations when "Start Over" button is clicked
         if st.button("Start Over"):
-            st.session_state.visible_recommendations = random.sample(button_texts, 3)
-            st.session_state.messages = []  # Clear conversation history
-            st.session_state.show_recommendations = True
-            st.rerun()  # Refresh to display new recommendations
+            start_over()
     else:
         display_login_register()
         st.warning("Please login to access the app.")

@@ -93,6 +93,7 @@ header {visibility: hidden;}
     padding-left: 15px; /* Optional left padding */
 }
 
+/* Makes model response text black */
 .stMarkdown {
     color: black;
 }
