@@ -129,10 +129,10 @@ def add_header():
         
         <script>
         function triggerLogout() {
-            // Set URL query parameter to trigger logout in Python
+            // Update URL to include logout=true
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('logout', 'true');
-            window.location.href = currentUrl;  // Redirect to the updated URL
+            window.location.href = currentUrl.toString();  // Redirect to the updated URL
         }
         </script>
         """,
@@ -142,9 +142,10 @@ def add_header():
     # Check for the logout query parameter in Python
     if 'logged_in' in st.session_state and st.query_params.get("logout") == "true":
         st.session_state['logged_in'] = False
-        # Clear the logout query parameter and rerun
-        st.query_params.clear()  # Clears the query parameters
+        # Clear the query parameter and rerun
+        st.query_params.from_dict({})  # Clears all query parameters
         st.rerun()
+
 
 
 # Call this function at the start of the main function or where appropriate in app.py
