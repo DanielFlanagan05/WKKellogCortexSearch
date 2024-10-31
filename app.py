@@ -204,8 +204,6 @@ def get_similar_chunks_search_service(query):
         return {}
 
 
-def start_over():
-
 # Summarize chat history with the current question
 def summarize_question_with_history(chat_history, question):
     prompt = f"<chat_history>{chat_history}</chat_history><question>{question}</question>"
