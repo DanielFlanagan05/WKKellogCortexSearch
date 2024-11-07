@@ -190,13 +190,6 @@ def add_header():
         st.query_params.from_dict({})  
         st.rerun()
 
-
-
-
-
-# Call this function at the start of the main function or where appropriate in app.py
-add_header()
-
 ### Functions
 
 def config_options():
