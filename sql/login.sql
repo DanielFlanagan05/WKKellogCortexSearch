@@ -6,3 +6,10 @@ CREATE TABLE IF NOT EXISTS users (
     username STRING UNIQUE NOT NULL,
     password_hash STRING NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS user_prompts (
+    id INTEGER AUTOINCREMENT PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    prompt_text STRING NOT NULL,
+    timestamp TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP
+);

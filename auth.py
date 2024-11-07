@@ -62,6 +62,10 @@ def login_user(session, username, password):
             if check_password(hashed_password, password):
                 st.session_state['logged_in'] = True
                 st.success('Logged in successfully!')
+                user_row = session.table('users').filter(f"username = '{username}'").collect()[0]
+                user_id = user_row['ID']  # Adjust based on your actual column name
+                st.session_state['user_id'] = user_id
+
             else:
                 st.error('Incorrect username or password.')
         else:

@@ -108,9 +108,11 @@ def display_login_register():
     elif option == 'Login':
         if st.button('Login'):
             login_user(session, username, password)
-            st.session_state['logged_in'] = True
-            st.session_state['show_welcome'] = True  
-            st.rerun()  
+            user_id = st.session_state.get('user_id')
+            if user_id:
+                st.session_state['logged_in'] = True
+                st.session_state['show_welcome'] = True  
+                st.rerun()  
 
 def run_sql_file(session, file_path):
     try:
