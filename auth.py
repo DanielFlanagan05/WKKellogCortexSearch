@@ -47,7 +47,7 @@ def register_user(session, username, password):
                 st.session_state['logged_in'] = True
                 st.success('User registered successfully!')
                 user_row = session.table('users').filter(f"username = '{username}'").collect()[0]
-                user_id = user_row['ID']  # Adjust based on your actual column name
+                user_id = user_row['ID'] 
                 st.session_state['user_id'] = user_id
                 return user_id
             
@@ -68,7 +68,7 @@ def login_user(session, username, password):
                 st.session_state['logged_in'] = True
                 st.success('Logged in successfully!')
                 user_row = session.table('users').filter(f"username = '{username}'").collect()[0]
-                user_id = user_row['ID']  # Adjust based on your actual column name
+                user_id = user_row['ID']  
                 st.session_state['user_id'] = user_id
                 return user_id
 
