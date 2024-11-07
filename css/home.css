@@ -219,3 +219,8 @@ header {visibility: hidden;}
     cursor: pointer;
     text-decoration: none;
 }
+
+/* Changes color of login page text to black */
+.e1nzilv, .e1y5xkzn3, .e1nzilvr5{
+    color: black;
+}
