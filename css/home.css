@@ -236,9 +236,16 @@ header {visibility: hidden;}
 
     /* Ensure text within welcome container scales and does not overflow */
     .welcome-heading, .welcome-subheading {
-        font-size: 1.2em;
         text-align: center;
         white-space: normal; 
+    }
+
+    .welcome-header {
+        font-size: 1.8em;
+    }
+
+    .welcome-subheading {
+        font-size: 1.4em;
     }
 
     /* Hide the logo on mobile */
