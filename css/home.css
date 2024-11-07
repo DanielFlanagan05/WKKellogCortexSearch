@@ -229,16 +229,16 @@ header {visibility: hidden;}
 @media only screen and (max-width: 768px) {
     /* Adjust welcome container for mobile */
     .welcome-container {
-        height: 60vh; /* Elongate the container */
-        padding: 20px; /* Reduce padding for mobile */
-        font-size: 0.8em; /* Scale down font for mobile */
+        height: 60vh; 
+        padding: 20px; 
+        font-size: 0.8em; 
     }
 
     /* Ensure text within welcome container scales and does not overflow */
     .welcome-heading, .welcome-subheading {
         font-size: 1.2em;
         text-align: center;
-        white-space: normal; /* Allow text to wrap if needed */
+        white-space: normal; 
     }
 
     /* Hide the logo on mobile */
@@ -246,7 +246,7 @@ header {visibility: hidden;}
         display: none;
     }
 
-    /* Center #ask-kai */
+    /* Center ask kai text */
     #ask-kai {
         font-size: 24px;
         text-align: center;
