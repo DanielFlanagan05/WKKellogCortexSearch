@@ -176,6 +176,33 @@ def config_options():
     st.sidebar.checkbox('Remember chat history?', key="use_chat_history", value=True)
     st.sidebar.checkbox('Show debug info', key="debug", value=True)
     st.sidebar.button("Start Over", key="clear_conversation", on_click=start_over)
+
+    if st.session_state.get('logged_in'):
+        user_id = st.session_state.get('user_id')
+        if user_id:
+            past_prompts_df = session.table('user_prompts') \
+                .filter(f"user_id = {user_id}") \
+                .select('prompt_text', 'timestamp') \
+                .order_by('timestamp', ascending=False) \
+                .limit(10) \
+                .collect()
+            past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
+            if past_prompts:
+                selected_past_prompt = st.sidebar.selectbox('Past Chats', ['Select a prompt'] + past_prompts, key='past_chats_selectbox')
+                if selected_past_prompt and selected_past_prompt != 'Select a prompt':
+                    # Simulate the user entering the prompt
+                    st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
+                    answer, _ = answer_question(selected_past_prompt)
+                    with st.chat_message("user"):
+                        st.markdown(selected_past_prompt)
+                    with st.chat_message("assistant"):
+                        st.markdown(answer)
+                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state['past_chats_selectbox'] = 'Select a prompt'  # Reset the selectbox
+                    st.rerun()
+    else:
+        st.sidebar.write("Please login to access past chats.")
+
     st.sidebar.expander("Session State").write(st.session_state)
 
 def init_messages():
