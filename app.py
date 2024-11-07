@@ -304,7 +304,7 @@ def save_prompt_to_database(session, user_id, prompt_text):
         raise ValueError("User ID and prompt text must not be NULL or empty")
 
     df = session.create_dataframe(
-        [(None, user_id, prompt_text, current_timestamp())],
+        [(None, user_id, prompt_text, lit(current_timestamp()))],
         schema=["id", "user_id", "prompt_text", "timestamp"]
     )
     
