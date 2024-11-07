@@ -2,6 +2,7 @@ import random
 from typing import Literal
 import streamlit as st
 from snowflake.snowpark.context import get_active_session
+from snowflake.snowpark.functions import lit, current_timestamp
 from snowflake.snowpark import Session
 from snowflake.cortex import Complete
 from snowflake.core import Root
@@ -10,6 +11,7 @@ import json
 import pandas as pd
 
 from auth import login_user, register_user
+
 
 
 pd.set_option("max_colwidth", None)
@@ -298,8 +300,12 @@ def create_prompt(myquestion):
     return prompt, [prompt_context_1, prompt_context_2]
 
 def save_prompt_to_database(session, user_id, prompt_text):
-    df = session.create_dataframe([(user_id, prompt_text)], schema=["user_id", "prompt_text"])
+    df = session.create_dataframe(
+        [(None, user_id, prompt_text, None)],
+        schema=["id", "user_id", "prompt_text", "timestamp"]
+    )
     df.write.mode("append").save_as_table("user_prompts")
+
 
 # Answer the question using the assistant
 def answer_question(myquestion):
