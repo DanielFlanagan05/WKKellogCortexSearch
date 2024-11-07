@@ -146,42 +146,16 @@ def load_custom_styles():
         st.write("CSS file not found.")
 
 def add_header():
-    header_container = st.container()
-    with header_container:
-        cols = st.columns([1, 3, 2, 1])
-        with cols[0]:
-            st.image('https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg', width=100)
-        with cols[1]:
-            st.markdown("<h2>Ask KAI!</h2>", unsafe_allow_html=True)
-        with cols[2]:
-            if st.session_state.get('logged_in'):
-                user_id = st.session_state.get('user_id')
-                if user_id:
-                    past_prompts_df = session.table('user_prompts') \
-                        .filter(f"user_id = {user_id}") \
-                        .select('prompt_text', 'timestamp') \
-                        .order_by('timestamp', ascending=False) \
-                        .limit(10) \
-                        .collect()
-                    past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
-                    if past_prompts:
-                        selected_past_prompt = st.selectbox('Past Chats', ['Select a prompt'] + past_prompts, key='past_chats_selectbox')
-                        if selected_past_prompt and selected_past_prompt != 'Select a prompt':
-                            # Simulate the user entering the prompt
-                            st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
-                            answer, _ = answer_question(selected_past_prompt)
-                            with st.chat_message("user"):
-                                st.markdown(selected_past_prompt)
-                            with st.chat_message("assistant"):
-                                st.markdown(answer)
-                            st.session_state.messages.append({"role": "assistant", "content": answer})
-                            st.session_state['past_chats_selectbox'] = 'Select a prompt'  # Reset the selectbox
-                            st.rerun()
-            else:
-                st.write("Please login to access past chats.")
-        with cols[3]:
-            st.markdown('<a href="?logout=true" target="_self" id="logout_button">Logout</a>', unsafe_allow_html=True)
-
+    st.markdown(
+        """
+        <div class='fixed-header'>
+            <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
+            <h2 id='ask-kai'>Ask KAI!</h2>
+            <a href="?logout=true" target="_self" id="logout_button">Logout</a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # Check for the logout query parameter in Python
     if 'logged_in' in st.session_state and st.query_params.get("logout") == "true":
@@ -189,6 +163,7 @@ def add_header():
         # Clear the query parameter and rerun
         st.query_params.from_dict({})  
         st.rerun()
+
 
 ### Functions
 
