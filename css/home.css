@@ -224,3 +224,38 @@ header {visibility: hidden;}
 .e1nzilv, .e1y5xkzn3, .e1nzilvr5{
     color: black;
 }
+
+
+@media only screen and (max-width: 768px) {
+    /* Adjust welcome container for mobile */
+    .welcome-container {
+        height: 60vh; /* Elongate the container */
+        padding: 20px; /* Reduce padding for mobile */
+        font-size: 0.8em; /* Scale down font for mobile */
+    }
+
+    /* Ensure text within welcome container scales and does not overflow */
+    .welcome-heading, .welcome-subheading {
+        font-size: 1.2em;
+        text-align: center;
+        white-space: normal; /* Allow text to wrap if needed */
+    }
+
+    /* Hide the logo on mobile */
+    .fixed-header img {
+        display: none;
+    }
+
+    /* Center #ask-kai */
+    #ask-kai {
+        font-size: 24px;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    /* Scale down logout button */
+    #logout_button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
