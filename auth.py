@@ -46,6 +46,7 @@ def register_user(session, username, password):
                 session.sql(sql_query).collect()  
                 st.success('User registered successfully!')
                 st.session_state['logged_in'] = True
+                login_user(session, username, password)
 
     except Exception as e:
         st.error(f"Error registering user: {e}")
