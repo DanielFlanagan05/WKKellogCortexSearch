@@ -44,12 +44,16 @@ def register_user(session, username, password):
                 hashed_password = hash_password(password)
                 sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
                 session.sql(sql_query).collect()  
-                st.success('User registered successfully!')
                 st.session_state['logged_in'] = True
-                login_user(session, username, password)
-
+                st.success('User registered successfully!')
+                user_row = session.table('users').filter(f"username = '{username}'").collect()[0]
+                user_id = user_row['ID']  # Adjust based on your actual column name
+                st.session_state['user_id'] = user_id
+                return user_id
+            
     except Exception as e:
         st.error(f"Error registering user: {e}")
+    return None
 
 
 
