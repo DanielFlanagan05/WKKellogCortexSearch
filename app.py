@@ -107,8 +107,7 @@ def display_login_register():
 
     elif option == 'Login':
         if st.button('Login'):
-            login_user(session, username, password)
-            user_id = st.session_state.get('user_id')
+            user_id = login_user(session, username, password)
             if user_id:
                 st.session_state['logged_in'] = True
                 st.session_state['show_welcome'] = True  

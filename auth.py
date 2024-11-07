@@ -65,6 +65,7 @@ def login_user(session, username, password):
                 user_row = session.table('users').filter(f"username = '{username}'").collect()[0]
                 user_id = user_row['ID']  # Adjust based on your actual column name
                 st.session_state['user_id'] = user_id
+                return user_id
 
             else:
                 st.error('Incorrect username or password.')
@@ -72,4 +73,5 @@ def login_user(session, username, password):
             st.error('User not found.')
     except Exception as e:
         st.error(f"Error logging in: {e}")
+    return None
 
