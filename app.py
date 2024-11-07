@@ -300,10 +300,14 @@ def create_prompt(myquestion):
     return prompt, [prompt_context_1, prompt_context_2]
 
 def save_prompt_to_database(session, user_id, prompt_text):
+    if user_id is None or not prompt_text:
+        raise ValueError("User ID and prompt text must not be NULL or empty")
+
     df = session.create_dataframe(
-        [(None, user_id, prompt_text, None)],
+        [(None, user_id, prompt_text, current_timestamp())],
         schema=["id", "user_id", "prompt_text", "timestamp"]
     )
+    
     df.write.mode("append").save_as_table("user_prompts")
 
 
