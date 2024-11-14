@@ -195,6 +195,9 @@ def config_options():
             #     st.session_state['past_chats_selectbox'] = 'Select a prompt'
             #     st.session_state['reset_past_chats_selectbox'] = False
 
+            if 'past_chats_selectbox' not in st.session_state:
+                st.session_state['past_chats_selectbox'] = 'Select a prompt'
+
             if past_prompts:
                 selected_past_prompt = st.sidebar.selectbox('Past Chats', ['Select a prompt'] + past_prompts, key='past_chats_selectbox')
                 if selected_past_prompt and selected_past_prompt != 'Select a prompt':
@@ -208,8 +211,8 @@ def config_options():
                     st.session_state.messages.append({"role": "assistant", "content": answer})
 
                     # Set flag to reset the past chats selectbox on the next rerun 
-                    # st.session_state['reset_past_chats_selectbox'] = True
-                    # st.rerun()
+                    st.session_state['reset_past_chats_selectbox'] = True
+                    st.rerun()
     else:
         st.sidebar.write("Please login to access past chats.")
 
@@ -345,14 +348,15 @@ def main():
     # Load custom styles and logo
     if st.session_state['logged_in']:
         # Configure sidebar options and initialize messages
-        config_options()
-        init_messages()
 
         # Checks for reset flag in session state. Useful for avoiding calling rerun in sidebar which streamlit can't fulfill yet.
         if st.session_state.get("reset_requested", False):
             st.session_state["reset_requested"] = False
-            st.rerun()
             st.session_state['past_chats_selectbox'] = 'Select a prompt'
+            st.rerun()
+        
+        config_options()
+        init_messages()
 
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
