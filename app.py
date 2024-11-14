@@ -6,6 +6,7 @@ from snowflake.snowpark.functions import lit, current_timestamp
 from snowflake.snowpark import Session
 from snowflake.cortex import Complete
 from snowflake.core import Root
+from datetime import datetime
 import bcrypt
 import json
 import pandas as pd
@@ -299,16 +300,18 @@ def create_prompt(myquestion):
     """
     return prompt, [prompt_context_1, prompt_context_2]
 
+
 def save_prompt_to_database(session, user_id, prompt_text):
     if user_id is None or not prompt_text:
         raise ValueError("User ID and prompt text must not be NULL or empty")
 
     df = session.create_dataframe(
-        [(None, user_id, prompt_text, lit(current_timestamp()))],
+        [(None, user_id, prompt_text, datetime.now())],
         schema=["id", "user_id", "prompt_text", "timestamp"]
     )
-    
+
     df.write.mode("append").save_as_table("user_prompts")
+
 
 
 # Answer the question using the assistant
