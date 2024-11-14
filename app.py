@@ -304,10 +304,13 @@ def save_prompt_to_database(session, user_id, prompt_text):
         raise ValueError("User ID and prompt text must not be NULL or empty")
 
     # Insert data into the table using the insert method
-    session.table("user_prompts").insert(
-        values=[(user_id, prompt_text)],
-        columns=["user_id", "prompt_text"]
-    )
+    sql_query = f"INSERT INTO user_prompts (user_id, prompt_text) VALUES ('{user_id}', '{prompt_text}')"
+    # session.table("user_prompts").insert(
+    #     values=[(user_id, prompt_text)],
+    #     columns=["user_id", "prompt_text"]
+    # )
+    session.sql(sql_query).collect()  
+
 
 
 
