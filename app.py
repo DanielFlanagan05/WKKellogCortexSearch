@@ -199,7 +199,12 @@ def config_options():
                 st.session_state['past_chats_selectbox'] = 'Select a prompt'
 
             if past_prompts:
-                selected_past_prompt = st.sidebar.selectbox('Past Chats', ['Select a prompt'] + past_prompts, key='past_chats_selectbox')
+                selected_past_prompt = st.sidebar.selectbox(
+                    'Past Chats',
+                    ['Select a prompt'] + past_prompts,
+                    key='past_chats_selectbox',
+                    index=0 if st.session_state.past_chats_selectbox == "Select a prompt" else None
+                )
                 if selected_past_prompt and selected_past_prompt != 'Select a prompt':
                     # Simulate the user entering the prompt
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
@@ -211,8 +216,8 @@ def config_options():
                     st.session_state.messages.append({"role": "assistant", "content": answer})
 
                     # Set flag to reset the past chats selectbox on the next rerun 
-                    st.session_state['reset_past_chats_selectbox'] = True
-                    st.rerun()
+                    # st.session_state['reset_past_chats_selectbox'] = True
+                    # st.rerun()
     else:
         st.sidebar.write("Please login to access past chats.")
 
@@ -341,6 +346,7 @@ def get_chat_history():
 def start_over():
     st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
     st.session_state.show_recommendations = True
+    st.session_state.past_chats_selectbox = "Select a prompt"  
     init_messages()
     st.session_state["reset_requested"] = True  
 
