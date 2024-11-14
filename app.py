@@ -188,6 +188,13 @@ def config_options():
                 .limit(10) \
                 .collect()
             past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
+
+            # This is used to determine if the selectbox needs to be reset since it can't be reset after
+            # the widget has been created, but its value can be reset by updating it before the widget is instantiated
+            if st.session_state.get('reset_past_chats_selectbox', False):
+                st.session_state['past_chats_selectbox'] = 'Select a prompt'
+                st.session_state['reset_past_chats_selectbox'] = False
+
             if past_prompts:
                 selected_past_prompt = st.sidebar.selectbox('Past Chats', ['Select a prompt'] + past_prompts, key='past_chats_selectbox')
                 if selected_past_prompt and selected_past_prompt != 'Select a prompt':
@@ -199,7 +206,9 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
-                    st.session_state['past_chats_selectbox'] = 'Select a prompt'  # Reset the selectbox
+
+                    # Set flag to reset the past chats selectbox on the next rerun 
+                    st.session_state['reset_past_chats_selectbox'] = True
                     st.rerun()
     else:
         st.sidebar.write("Please login to access past chats.")
