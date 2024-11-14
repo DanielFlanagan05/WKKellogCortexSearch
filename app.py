@@ -2,11 +2,9 @@ import random
 from typing import Literal
 import streamlit as st
 from snowflake.snowpark.context import get_active_session
-from snowflake.snowpark.functions import lit, current_timestamp
 from snowflake.snowpark import Session
 from snowflake.cortex import Complete
 from snowflake.core import Root
-from datetime import datetime
 import bcrypt
 import json
 import pandas as pd
@@ -185,8 +183,8 @@ def config_options():
         if user_id:
             past_prompts_df = session.table('user_prompts') \
                 .filter(f"user_id = {user_id}") \
-                .select('prompt_text', 'timestamp') \
-                .order_by('timestamp', ascending=False) \
+                .select('prompt_text', 'id') \
+                .order_by('id', ascending=False) \
                 .limit(10) \
                 .collect()
             past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
