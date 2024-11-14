@@ -351,8 +351,9 @@ def main():
         # Checks for reset flag in session state. Useful for avoiding calling rerun in sidebar which streamlit can't fulfill yet.
         if st.session_state.get("reset_requested", False):
             st.session_state["reset_requested"] = False
-            st.session_state['past_chats_selectbox'] = 'Select a prompt'
             st.rerun()
+            st.session_state['past_chats_selectbox'] = 'Select a prompt'
+
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
         if 'show_recommendations' not in st.session_state:
