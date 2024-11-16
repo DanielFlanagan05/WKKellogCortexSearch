@@ -218,6 +218,7 @@ header {visibility: hidden;}
     border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
+    display: none;
 }
 
 /* Changes color of login page text to black */

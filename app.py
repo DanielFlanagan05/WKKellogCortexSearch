@@ -145,16 +145,22 @@ def load_custom_styles():
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
         st.write("CSS file not found.")
-
+        
 def add_header():
     st.markdown(
         """
         <div class='fixed-header'>
             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
             <h2 id='ask-kai'>Ask KAI!</h2>
-            <a href="?logout=true" target="_self" id="logout_button">Logout</a>
+            {logout_button}
         </div>
-        """,
+        """.format(
+            logout_button=(
+                """<a href="?logout=true" id="logout_button">Logout</a>"""
+                if st.session_state.get('logged_in', False)
+                else ""
+            )
+        ),
         unsafe_allow_html=True
     )
 
