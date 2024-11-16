@@ -145,32 +145,57 @@ def load_custom_styles():
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
         st.write("CSS file not found.")
-        
+
+# def add_header():
+#     st.markdown(
+#         """
+#         <div class='fixed-header'>
+#             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
+#             <h2 id='ask-kai'>Ask KAI!</h2>
+#             <a href="?logout=true" target="_self" id="logout_button">Logout</a>
+#         </div>
+#         """,
+#         unsafe_allow_html=True
+#     )
+
+#     # Check for the logout query parameter in Python
+#     if 'logged_in' in st.session_state and st.query_params.get("logout") == "true":
+#         st.session_state['logged_in'] = False
+#         # Clear the query parameter and rerun
+#         st.query_params.from_dict({})  
+#         st.rerun()
+
 def add_header():
-    st.markdown(
-        """
-        <div class='fixed-header'>
-            <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
-            <h2 id='ask-kai'>Ask KAI!</h2>
-            {logout_button}
-        </div>
-        """.format(
-            logout_button=(
-                """<a href="?logout=true" id="logout_button">Logout</a>"""
-                if st.session_state.get('logged_in', False)
-                else ""
-            )
-        ),
-        unsafe_allow_html=True
-    )
+    if st.session_state['logged_in']:
+        # Display the header with the logout button
+        st.markdown(
+            """
+            <div class='fixed-header'>
+                <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
+                <h2 id='ask-kai'>Ask KAI!</h2>
+                <a href="?logout=true" target="_self" id="logout_button">Logout</a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-    # Check for the logout query parameter in Python
-    if 'logged_in' in st.session_state and st.query_params.get("logout") == "true":
-        st.session_state['logged_in'] = False
-        # Clear the query parameter and rerun
-        st.query_params.from_dict({})  
-        st.rerun()
-
+        # Check for the logout query parameter
+        if st.query_params.get("logout") == "true":
+            st.session_state['logged_in'] = False
+            # Clear the query parameter and rerun
+            st.query_params.from_dict({})  
+            st.rerun()
+    else:
+        # Display the header without the logout button
+        st.markdown(
+            """
+            <div class='fixed-header'>
+                <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
+                <h2 id='ask-kai'>Ask KAI!</h2>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 ### Functions
 
