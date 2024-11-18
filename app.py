@@ -557,23 +557,23 @@ def summarize_response(response):
 
 
 # Answer the question using the assistant
-def answer_question(myquestion):
-    prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt, session=session)
-    return response, relative_paths
-
 # def answer_question(myquestion):
-    
 #     prompt, relative_paths = create_prompt(myquestion)
-#     response = Complete(st.session_state.model_name, prompt) 
-#     cleaned_response = clean_response(response)
+#     response = Complete(st.session_state.model_name, prompt, session=session)
+#     return response, relative_paths
 
-#     summary = summarize_response(cleaned_response)
+def answer_question(myquestion):
     
-#     # Using st.text() instead of st.markdown() to prevent unintended Markdown formatting
-#     st.text(cleaned_response)
+    prompt, relative_paths = create_prompt(myquestion)
+    response = Complete(st.session_state.model_name, prompt) 
+    cleaned_response = clean_response(response)
 
-#     return cleaned_response, summary, relative_paths
+    summary = summarize_response(cleaned_response)
+    
+    # Using st.text() instead of st.markdown() to prevent unintended Markdown formatting
+    st.text(cleaned_response)
+
+    return cleaned_response, summary, relative_paths
 
 # Get chat history
 def get_chat_history():
