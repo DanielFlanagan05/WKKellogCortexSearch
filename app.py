@@ -5,6 +5,9 @@ from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark import Session
 from snowflake.cortex import Complete
 from snowflake.core import Root
+from fpdf import FPDF
+import base64
+import io
 import bcrypt
 import json
 import pandas as pd
@@ -177,6 +180,60 @@ def add_header():
             """,
             unsafe_allow_html=True
         )
+
+######################################################################
+# NOTE TAKING FUNCTIONS
+######################################################################
+def notes_section():
+    st.sidebar.markdown("## 📝 Note-Taking")
+    
+    # Initialize session state for notes if it doesn't exist
+    if "notes" not in st.session_state:
+        st.session_state.notes = []
+
+    # Text input for writing a new note
+    new_note = st.sidebar.text_area("Add a new note:", key="note_input")
+    
+    # Button to save the new note
+    if st.sidebar.button("Save Note"):
+        if new_note:
+            st.session_state.notes.append(new_note)
+            st.sidebar.success("Note saved!")
+        else:
+            st.sidebar.warning("Please enter a note before saving.")
+    
+    # Add a button to export notes as a PDF
+    if st.sidebar.button("Export Notes as PDF"):
+        if st.session_state.notes:
+            export_notes_to_pdf()
+        else:
+            st.sidebar.warning("No notes to export.")
+
+def export_notes_to_pdf():
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Add content to the PDF
+    pdf.cell(200, 10, txt="Saved Notes", ln=True, align="C")
+    pdf.ln(10)  # Add a line break
+
+    for idx, note in enumerate(st.session_state.notes, start=1):
+        pdf.multi_cell(0, 10, f"Note {idx}:\n{note}")
+        pdf.ln(5)  # Add space between notes
+
+    # Save the PDF to a BytesIO object
+    pdf_buffer = io.BytesIO()
+    pdf.output(pdf_buffer)
+    pdf_buffer.seek(0)
+
+    # Provide a download link in the sidebar
+    b64_pdf = base64.b64encode(pdf_buffer.read()).decode('latin1')
+    href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">📥 Download Notes as PDF</a>'
+    st.sidebar.markdown(href, unsafe_allow_html=True)
+
+
 
 ### Functions
 
@@ -382,6 +439,8 @@ def main():
         
         config_options()
         init_messages()
+        notes_section()
+
 
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
