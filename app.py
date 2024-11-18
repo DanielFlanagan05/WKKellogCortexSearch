@@ -5,12 +5,16 @@ from snowflake.snowpark.context import get_active_session
 from snowflake.snowpark import Session
 from snowflake.cortex import Complete
 from snowflake.core import Root
-from fpdf import FPDF
 import base64
 import io
 import bcrypt
 import json
 import pandas as pd
+from fpdf import FPDF
+from PyPDF2 import PdfReader
+import plotly.express as px
+
+import re
 
 from auth import login_user, register_user
 
