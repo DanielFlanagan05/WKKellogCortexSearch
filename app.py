@@ -538,14 +538,42 @@ def display_welcome_message():
         unsafe_allow_html=True
     )
 
+def clean_response(response):
+    
+    response = re.sub(r'(\d)(million|billion)', r'\1 million', response)
+    response = re.sub(r'(\d)(thousand)', r'\1 thousand', response)
+    return response
 
+def summarize_response(response):
+    prompt = f"""
+    Provide a concise summary of the following response, focusing on the top three key insights only. Organize the summary in three clear, actionable bullet points:
+
+    {response}
+
+    Key Insights (Limit to 3):
+    """
+    summary = Complete(st.session_state.model_name, prompt)
+    return summary
 
 
 # Answer the question using the assistant
+# def answer_question(myquestion):
+#     prompt, relative_paths = create_prompt(myquestion)
+#     response = Complete(st.session_state.model_name, prompt, session=session)
+#     return response, relative_paths
+
 def answer_question(myquestion):
+    
     prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt, session=session)
-    return response, relative_paths
+    response = Complete(st.session_state.model_name, prompt) 
+    cleaned_response = clean_response(response)
+
+    summary = summarize_response(cleaned_response)
+    
+    # Using st.text() instead of st.markdown() to prevent unintended Markdown formatting
+    st.text(cleaned_response)
+
+    return cleaned_response, summary, relative_paths
 
 # Get chat history
 def get_chat_history():
