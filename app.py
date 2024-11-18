@@ -414,7 +414,7 @@ def main():
                         st.rerun()  
 
         # If recommendations have been clicked, display conversation history
-        if not st.session_state.show_recommendations and st.session_state.past_chats_selectbox != 'Select a prompt':
+        if not st.session_state.show_recommendations and st.session_state.past_chats_selectbox == 'Select a prompt':
             for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
