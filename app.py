@@ -226,6 +226,8 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state['past_chats_selectbox'] = 'Select a prompt'
+
                     st.rerun()
 
     else:
