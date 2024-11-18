@@ -136,8 +136,8 @@ def run_sql_file(session, file_path):
         st.error(f"Error executing SQL file {file_path}: {e}")
 
 ######################################################################
- # HEADER & STYLE SHEET LOADING
- ######################################################################
+# HEADER & STYLE SHEET LOADING
+######################################################################
 
 # Load custom styles and logo
 def load_custom_styles():
@@ -340,6 +340,16 @@ def save_prompt_to_database(session, user_id, prompt_text):
     # )
     session.sql(sql_query).collect()  
 
+def display_welcome_message():
+    st.markdown(
+        """
+        <div class='welcome-container'>
+            <h1 class='welcome-heading'>Welcome to KAI, your Cereal Industry Analysis Tool</h1>
+            <h2 class='welcome-subheading'>Please select a question or type your own to begin.</h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 
@@ -360,6 +370,7 @@ def start_over():
     st.session_state.show_recommendations = True
     # st.session_state.past_chats_selectbox = "Select a prompt"  
     init_messages()
+    display_welcome_message()
     st.session_state["reset_requested"] = True  
 
 def main():
@@ -387,15 +398,7 @@ def main():
 
         # Display welcome message and recommendations if no conversation has started and recommendations are active
         if st.session_state.show_recommendations and not st.session_state.messages:
-            st.markdown(
-                """
-                <div class='welcome-container'>
-                    <h1 class='welcome-heading'>Hi! I am Kai, your Cereal Industry Analysis Tool</h1>
-                    <h2 class='welcome-subheading'>Please select a question or type your own to begin.</h2>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            display_welcome_message()
         if 'visible_recommendations' not in st.session_state:
             st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
 
