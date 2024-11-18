@@ -373,6 +373,7 @@ def start_over():
     # init_messages()
     # display_welcome_message
     st.session_state["reset_requested"] = True  
+    st.rerun()
 
 def main():
     # Load custom styles and logo
