@@ -201,12 +201,6 @@ def config_options():
                 .collect()
             past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
 
-            # This is used to determine if the selectbox needs to be reset since it can't be reset after
-            # the widget has been created, but its value can be reset by updating it before the widget is instantiated
-            # if st.session_state.get('reset_past_chats_selectbox', False):
-            #     st.session_state['past_chats_selectbox'] = 'Select a prompt'
-            #     st.session_state['reset_past_chats_selectbox'] = False
-
             if 'past_chats_selectbox' not in st.session_state:
                 st.session_state['past_chats_selectbox'] = 'Select a prompt'
 
@@ -339,10 +333,7 @@ def save_prompt_to_database(session, user_id, prompt_text):
 
     # Insert data into the table using the insert method
     sql_query = f"INSERT INTO user_prompts (user_id, prompt_text) VALUES ('{user_id}', '{prompt_text}')"
-    # session.table("user_prompts").insert(
-    #     values=[(user_id, prompt_text)],
-    #     columns=["user_id", "prompt_text"]
-    # )
+
     session.sql(sql_query).collect()  
 
 def display_welcome_message():
