@@ -514,6 +514,8 @@ def create_prompt(myquestion):
         
         Answer:
         """
+    return prompt, [prompt_context_1, prompt_context_2]
+
 
 
 def save_prompt_to_database(session, user_id, prompt_text):
