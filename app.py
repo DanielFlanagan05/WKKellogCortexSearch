@@ -367,7 +367,6 @@ def start_over():
     st.session_state.show_recommendations = True
     st.session_state.messages = [] # Clear the conversation history
     st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3) 
-    st.session_state.past_chats_selectbox = "Select a prompt"  # Resets the past chats selectbox
     st.session_state["reset_requested"] = True  
     st.rerun()
 
