@@ -226,6 +226,8 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state.show_recommendations = False
+
                     # st.rerun()
 
     else:
