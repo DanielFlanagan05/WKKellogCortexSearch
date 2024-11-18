@@ -214,8 +214,8 @@ def config_options():
                 selected_past_prompt = st.sidebar.selectbox(
                     'Past Chats',
                     ['Select a prompt'] + past_prompts,
-                    key='past_chats_selectbox',
-                    index=0 if st.session_state.past_chats_selectbox == "Select a prompt" else None
+                    key='past_chats_selectbox'
+                
                 )
                 if selected_past_prompt and selected_past_prompt != 'Select a prompt':
                     # Simulate the user entering the prompt
@@ -367,7 +367,7 @@ def start_over():
     st.session_state.show_recommendations = True
     st.session_state.messages = [] # Clear the conversation history
     st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3) 
-    st.session_state.past_chats_selectbox = "Select a prompt"  
+    st.session_state.past_chats_selectbox = "Select a prompt"  # Resets the past chats selectbox
     st.session_state["reset_requested"] = True  
     st.rerun()
 
