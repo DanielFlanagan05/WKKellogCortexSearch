@@ -184,7 +184,7 @@ def add_header():
         )
 
 ######################################################################
-# NOTE TAKING FUNCTIONS
+# NOTE TAKING FUNCTIONS & SUMMARY EXPORT
 ######################################################################
 def notes_section():
     st.sidebar.markdown("## 📝 Note-Taking")
@@ -225,23 +225,42 @@ def export_notes_to_pdf():
         pdf.multi_cell(0, 10, f"Note {idx}:\n{note}")
         pdf.ln(5)  # Add space between notes
 
-    # Save the PDF to a BytesIO object
-    # pdf_buffer = io.BytesIO()
-    # pdf.output(pdf_buffer)
-    # pdf_buffer.seek(0)
-
     # Save the PDF to a temporary file
     pdf_file = "/tmp/notes.pdf"
     pdf.output(pdf_file)
 
     # Provide a download link in the sidebar
-    # b64_pdf = base64.b64encode(pdf_buffer.read()).decode('latin1')
-    # href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">📥 Download Notes as PDF</a>'
-    # st.sidebar.markdown(href, unsafe_allow_html=True)
-    # Provide a download link in the sidebar
     with open(pdf_file, "rb") as file:
         b64_pdf = base64.b64encode(file.read()).decode("utf-8")
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">Download Notes as PDF</a>'
+        st.sidebar.markdown(href, unsafe_allow_html=True)
+
+def export_summary_to_pdf(summary):
+    if not summary:
+        st.sidebar.warning("No summary available to export.")
+        return
+    
+    # Create a PDF instance
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Add content to the PDF
+    pdf.cell(200, 10, txt="Response Summary", ln=True, align="C")
+    pdf.ln(10)  # Add a line break
+
+    pdf.multi_cell(0, 10, summary)
+    pdf.ln(2)  # Add a small space between lines
+
+    # Save the PDF to a temporary file
+    pdf_file = "/tmp/response_summary.pdf"
+    pdf.output(pdf_file)
+
+    # Provide a download link in the sidebar
+    with open(pdf_file, "rb") as file:
+        b64_pdf = base64.b64encode(file.read()).decode("utf-8")
+        href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="response_summary.pdf">Download Response Summary as PDF</a>'
         st.sidebar.markdown(href, unsafe_allow_html=True)
 
 
@@ -440,18 +459,23 @@ def main():
     # Load custom styles and logo
     if st.session_state['logged_in']:
         # Configure sidebar options and initialize messages
-
-        # Checks for reset flag in session state. Useful for avoiding calling rerun in sidebar which streamlit can't fulfill yet.
-        if st.session_state.get("reset_requested", False):
+        # Checks for reset flag in session state
+        if st.session_state.get("reset_requested", False): 
             st.session_state["reset_requested"] = False
             st.session_state['past_chats_selectbox'] = 'Select a prompt'
             st.rerun()
-        
+
         config_options()
         init_messages()
         notes_section()
 
-
+        # Add Export Summary functionality
+        st.sidebar.markdown("## Export Summary")
+        if st.sidebar.button("Export Summary as PDF"):
+            if "summary" in st.session_state and st.session_state.summary:
+                export_summary_to_pdf(st.session_state.summary)
+            else:
+                st.sidebar.warning("Generate a response summary first before exporting.")
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
         if 'show_recommendations' not in st.session_state:
@@ -464,6 +488,7 @@ def main():
         # Display welcome message and recommendations if no conversation has started and recommendations are active
         if st.session_state.show_recommendations and not st.session_state.messages:
             display_welcome_message()
+
         if 'visible_recommendations' not in st.session_state:
             st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
 
@@ -475,10 +500,11 @@ def main():
                     if st.button(rec, key=f"recommendation_{i}"):
                         st.session_state.selected_recommendation = rec
                         st.session_state.messages.append({"role": "user", "content": rec})
-                        answer, _ = answer_question(rec)
+                        answer, summary = answer_question(rec)
                         st.session_state.messages.append({"role": "assistant", "content": answer})
+                        st.session_state.summary = summary
                         st.session_state.show_recommendations = False
-                        st.rerun()  
+                        st.rerun()
 
         # If recommendations have been clicked, display conversation history
         if not st.session_state.show_recommendations and st.session_state.past_chats_selectbox == 'Select a prompt':
@@ -495,14 +521,16 @@ def main():
             if user_id:
                 save_prompt_to_database(session, user_id, prompt)
 
-            answer, _ = answer_question(prompt)
+            answer, summary = answer_question(prompt)
 
             with st.chat_message("user"):
                 st.markdown(prompt)
 
             with st.chat_message("assistant"):
                 st.markdown(answer)
+
             st.session_state.messages.append({"role": "assistant", "content": answer})
+            st.session_state.summary = summary
 
             # Hides the recommendations after a user submits a prompt
             st.session_state.show_recommendations = False
@@ -514,6 +542,7 @@ def main():
     else:
         display_login_register()
         st.warning("Please login to access the app.")
+
 
 # Run the app
 if __name__ == "__main__":
