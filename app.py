@@ -229,7 +229,7 @@ def config_options():
                     # Update the last processed prompt
                     st.session_state['last_processed_prompt'] = selected_past_prompt
 
-                    st.rerun()
+                    # st.rerun()
 
 
     else:
