@@ -210,6 +210,14 @@ def config_options():
             if 'past_chats_selectbox' not in st.session_state:
                 st.session_state['past_chats_selectbox'] = 'Select a prompt'
 
+            if 'prompt_processed' not in st.session_state:
+                st.session_state['prompt_processed'] = False
+
+            # Reset the selectbox value before widget creation if prompt was processed
+            if st.session_state['prompt_processed']:
+                st.session_state['past_chats_selectbox'] = 'Select a prompt'
+                st.session_state['prompt_processed'] = False  # Reset the flag
+
             if past_prompts:
                 selected_past_prompt = st.sidebar.selectbox(
                     'Past Chats',
@@ -226,6 +234,8 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state['prompt_processed'] = True
+
                     st.rerun()
 
     else:
