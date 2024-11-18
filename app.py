@@ -366,11 +366,12 @@ def get_chat_history():
     return [msg["content"] for msg in st.session_state.messages[start_index:]]
     
 def start_over():
-    st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3)
     st.session_state.show_recommendations = True
+    st.session_state.clear_conversation = True # Clear the conversation history
+    st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3) 
     # st.session_state.past_chats_selectbox = "Select a prompt"  
-    init_messages()
-    display_welcome_message()
+    # init_messages()
+    # display_welcome_message
     st.session_state["reset_requested"] = True  
 
 def main():
