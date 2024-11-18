@@ -226,10 +226,8 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
-
-                    # Set flag to reset the past chats selectbox on the next rerun 
-                    # st.session_state['reset_past_chats_selectbox'] = True
-                    # st.rerun()
+                    st.rerun()
+                    
     else:
         st.sidebar.write("Please login to access past chats.")
 
