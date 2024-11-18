@@ -5,3 +5,4 @@ snowflake-ml-python
 snowflake.core
 pandas
 bcrypt
+fpdf
