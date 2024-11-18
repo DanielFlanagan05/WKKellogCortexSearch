@@ -299,9 +299,21 @@ def display_model_documentation():
 ### Functions
 
 def config_options():
-    st.sidebar.selectbox('Select your model:', (
-        'mixtral-8x7b', 'snowflake-arctic', 'mistral-large', 'llama3-8b', 'llama3-70b', 'reka-flash', 'mistral-7b', 'llama2-70b-chat', 'gemma-7b'), key="model_name")
-    display_model_documentation()
+    
+    # Sidebar dropdown for model selection
+    selected_model = st.sidebar.selectbox(
+        'Select your model:', 
+        list(MODEL_DESCRIPTIONS.keys()), 
+        key="model_name"
+    )
+
+    # Automatically display the description of the selected model
+    st.sidebar.markdown(f"### Selected Model: **{selected_model}**")
+    st.sidebar.write(MODEL_DESCRIPTIONS[selected_model])
+
+
+    # st.sidebar.selectbox('Select your model:', (
+    #     'mixtral-8x7b', 'snowflake-arctic', 'mistral-large', 'llama3-8b', 'llama3-70b', 'reka-flash', 'mistral-7b', 'llama2-70b-chat', 'gemma-7b'), key="model_name")
     categories = session.table('docs_chunks_table').select('category').distinct().collect()
     cat_list = ['ALL'] + [cat.CATEGORY for cat in categories]
     st.sidebar.selectbox('Select product category', cat_list, key="category_value")
