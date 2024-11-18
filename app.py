@@ -552,7 +552,7 @@ def summarize_response(response):
 
     Key Insights (Limit to 3):
     """
-    summary = Complete(st.session_state.model_name, prompt)
+    summary = Complete(st.session_state.model_name, prompt, session=session)
     return summary
 
 
