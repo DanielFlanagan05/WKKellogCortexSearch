@@ -313,7 +313,7 @@ def config_options():
                     selected_past_prompt != st.session_state['last_processed_prompt']):
                     # Process the prompt
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
-                    answer, _ = answer_question(selected_past_prompt)
+                    answer, summary, _ = answer_question(selected_past_prompt)
                     with st.chat_message("user"):
                         st.markdown(selected_past_prompt)
                     with st.chat_message("assistant"):
@@ -634,7 +634,7 @@ def main():
                     if st.button(rec, key=f"recommendation_{i}"):
                         st.session_state.selected_recommendation = rec
                         st.session_state.messages.append({"role": "user", "content": rec})
-                        answer, summary = answer_question(rec)
+                        answer, summary, _ = answer_question(rec)
                         st.session_state.messages.append({"role": "assistant", "content": answer})
                         st.session_state.summary = summary
                         st.session_state.show_recommendations = False
@@ -655,7 +655,7 @@ def main():
             if user_id:
                 save_prompt_to_database(session, user_id, prompt)
 
-            answer, summary = answer_question(prompt)
+            answer, summary, _ = answer_question(prompt)
 
             with st.chat_message("user"):
                 st.markdown(prompt)
