@@ -201,23 +201,24 @@ def config_options():
                 .collect()
             past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
 
+            # This is used to determine if the selectbox needs to be reset since it can't be reset after
+            # the widget has been created, but its value can be reset by updating it before the widget is instantiated
+            # if st.session_state.get('reset_past_chats_selectbox', False):
+            #     st.session_state['past_chats_selectbox'] = 'Select a prompt'
+            #     st.session_state['reset_past_chats_selectbox'] = False
+
             if 'past_chats_selectbox' not in st.session_state:
                 st.session_state['past_chats_selectbox'] = 'Select a prompt'
-
-
-            if 'last_processed_prompt' not in st.session_state:
-                st.session_state['last_processed_prompt'] = None
 
             if past_prompts:
                 selected_past_prompt = st.sidebar.selectbox(
                     'Past Chats',
                     ['Select a prompt'] + past_prompts,
                     key='past_chats_selectbox'
+                
                 )
-
-                if (selected_past_prompt and selected_past_prompt != 'Select a prompt' and
-                    selected_past_prompt != st.session_state['last_processed_prompt']):
-                    # Process the prompt
+                if selected_past_prompt and selected_past_prompt != 'Select a prompt':
+                    # Simulate the user entering the prompt
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
                     answer, _ = answer_question(selected_past_prompt)
                     with st.chat_message("user"):
@@ -225,12 +226,7 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
-
-                    # Update the last processed prompt
-                    st.session_state['last_processed_prompt'] = selected_past_prompt
-
                     # st.rerun()
-
 
     else:
         st.sidebar.write("Please login to access past chats.")
