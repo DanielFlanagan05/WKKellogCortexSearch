@@ -55,6 +55,19 @@ BUTTON_TEXTS = [
     "What are the revenue growth projections for the cereal industry through 2025?"
 ]
 
+MODEL_DESCRIPTIONS = {
+    'mixtral-8x7b': "Mixtral-8x7b is an open-source transformer model, ideal for general text processing tasks such as summarization, classification, and answering questions. It performs well on medium-sized to large datasets.",
+    'snowflake-arctic': "Snowflake-Arctic is a model optimized for financial analysis and forecasting. It excels in analyzing large datasets with particular optimization for Snowflake's data lake and warehouse ecosystems.",
+    'mistral-large': "Mistral-Large is a high-performance model tailored for language generation tasks. It's great for content creation, including generating emails, reports, and marketing copy.",
+    'llama3-8b': "Llama3-8b is a powerful, general-purpose language model.It is highly optimized for maintaining coherence and structure across complex and nuanced tasks generating structured content like formal reports and conversational agents requiring adherence to format",
+    'llama3-70b': "Llama3-70b is a massive model capable of handling highly complex tasks with a deep understanding of nuanced language patterns. Ideal for advanced research or industry-specific NLP tasks.",
+    'reka-flash': "Reka-Flash is a lightweight model designed for fast inference and quick responses. It's suitable for low-latency applications like real-time chatbots or recommendation systems.",
+    'mistral-7b': "Mistral-7b is a balanced model that offers a good trade-off between performance and computational efficiency. It's useful for general NLP tasks without requiring massive compute resources.",
+    'llama2-70b-chat': "Llama2-70b-Chat is optimized for conversational AI, providing human-like dialogue capabilities. It works best in chat applications, support bots, and virtual assistants.",
+    'gemma-7b': "Gemma-7b is fine-tuned for creative tasks like writing, generating ideas, and crafting compelling stories or articles. It's ideal for content marketers and creative professionals."
+}
+
+
 # --- Snowflake connection setup ---
 def create_snowflake_session():
     # Fetching Snowflake credentials from Streamlit secrets
@@ -274,11 +287,21 @@ def export_summary_to_pdf(summary):
         st.sidebar.markdown(href, unsafe_allow_html=True)
 
 
+def display_model_documentation():
+    st.markdown("## 📚 Model Documentation")
+    st.markdown("Here are the models available for selection and their descriptions:")
+    
+    for model, description in MODEL_DESCRIPTIONS.items():
+        st.markdown(f"### **{model}**")
+        st.write(description)
+        st.markdown("---")  
+
 ### Functions
 
 def config_options():
     st.sidebar.selectbox('Select your model:', (
         'mixtral-8x7b', 'snowflake-arctic', 'mistral-large', 'llama3-8b', 'llama3-70b', 'reka-flash', 'mistral-7b', 'llama2-70b-chat', 'gemma-7b'), key="model_name")
+    display_model_documentation()
     categories = session.table('docs_chunks_table').select('category').distinct().collect()
     cat_list = ['ALL'] + [cat.CATEGORY for cat in categories]
     st.sidebar.selectbox('Select product category', cat_list, key="category_value")
