@@ -6,5 +6,3 @@ snowflake.core
 pandas
 bcrypt
 fpdf
-PyPDF2
-plotly

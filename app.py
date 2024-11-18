@@ -11,8 +11,6 @@ import bcrypt
 import json
 import pandas as pd
 from fpdf import FPDF
-from PyPDF2 import PdfReader
-import plotly.express as px
 
 import re
 
