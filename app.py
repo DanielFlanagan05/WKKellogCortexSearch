@@ -227,7 +227,7 @@ def config_options():
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
                     st.rerun()
-                    
+
     else:
         st.sidebar.write("Please login to access past chats.")
 
@@ -367,9 +367,7 @@ def start_over():
     st.session_state.show_recommendations = True
     st.session_state.messages = [] # Clear the conversation history
     st.session_state.visible_recommendations = random.sample(BUTTON_TEXTS, 3) 
-    # st.session_state.past_chats_selectbox = "Select a prompt"  
-    # init_messages()
-    # display_welcome_message
+    st.session_state.past_chats_selectbox = "Select a prompt"  
     st.session_state["reset_requested"] = True  
     st.rerun()
 
