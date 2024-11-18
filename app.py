@@ -378,49 +378,142 @@ def summarize_question_with_history(chat_history, question):
     prompt = f"<chat_history>{chat_history}</chat_history><question>{question}</question>"
     return Complete(model = st.session_state.model_name, prompt = prompt, session=session)
 
+# def create_prompt(myquestion):
+#     if st.session_state.use_chat_history:
+#         chat_history = get_chat_history()
+#         if chat_history:
+#             question_summary = summarize_question_with_history(chat_history, myquestion)
+#             response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+#             response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+#         else:
+#             response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+#             response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+#     else:
+#         response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+#         response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+ 
+#     # Parse the response as JSON using json.loads()
+#     try:
+#         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
+#         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
+#     except Exception as e:
+#         st.error(f"Error parsing search response JSON: {e}")
+#         prompt_context_1 = []
+#         prompt_context_2 = []
+
+#     # Combine results with clear distinction in the prompt
+#     prompt = prompt = f"""
+#     As an expert financial analyst, provide a detailed analysis of the financial statements (10Q, 10K) of WK Kellogg Co and General Mills from 2019-2023. Focus on these aspects:
+#     1. Revenue Trends (Provide a table)
+#     2. Net Income 
+#     3. Cash Flow Analysis 
+#     4. Areas of Investments made by the company (Provide a table)
+#     5. Efficiency and Cost Control Strategies: Analyze how WK Kellogg Co and General Mills is working to improve operational efficiency and reduce marginal costs.
+#     6. Profit Margins: Break down gross, operating, and net profit margins (Display in a table).
+#     7. Key Risk Factors
+
+#     **Important**: Even if specific data is not available, leverage pre-trained financial knowledge to provide the most accurate analysis possible based on typical industry standards and practices. Do not state that you lack the context; instead, offer insights and trends based on relevant industry data.  
+#     **Important**:Do not cover all aspects at once; address them only when specifically requested.
+#     Answer:
+#     <context 1>{prompt_context_1}</context 1>
+#     <context 2>{prompt_context_2}</context 2>
+#     <question>{myquestion}</question>
+#     Answer:
+#     """
+#     return prompt, [prompt_context_1, prompt_context_2]
+
 def create_prompt(myquestion):
+
     if st.session_state.use_chat_history:
+
         chat_history = get_chat_history()
+
         if chat_history:
+
             question_summary = summarize_question_with_history(chat_history, myquestion)
+
             response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+
             response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+
         else:
+
             response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+
             response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+
     else:
+
         response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+
         response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
  
     # Parse the response as JSON using json.loads()
+
     try:
+
         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
+
         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
+
     except Exception as e:
+
         st.error(f"Error parsing search response JSON: {e}")
+
         prompt_context_1 = []
+
         prompt_context_2 = []
-
+ 
     # Combine results with clear distinction in the prompt
-    prompt = prompt = f"""
-    As an expert financial analyst, provide a detailed analysis of the financial statements (10Q, 10K) of WK Kellogg Co and General Mills from 2019-2023. Focus on these aspects:
-    1. Revenue Trends (Provide a table)
-    2. Net Income 
-    3. Cash Flow Analysis 
-    4. Areas of Investments made by the company (Provide a table)
-    5. Efficiency and Cost Control Strategies: Analyze how WK Kellogg Co and General Mills is working to improve operational efficiency and reduce marginal costs.
-    6. Profit Margins: Break down gross, operating, and net profit margins (Display in a table).
-    7. Key Risk Factors
 
-    **Important**: Even if specific data is not available, leverage pre-trained financial knowledge to provide the most accurate analysis possible based on typical industry standards and practices. Do not state that you lack the context; instead, offer insights and trends based on relevant industry data.  
-    **Important**:Do not cover all aspects at once; address them only when specifically requested.
-    Answer:
-    <context 1>{prompt_context_1}</context 1>
-    <context 2>{prompt_context_2}</context 2>
-    <question>{myquestion}</question>
-    Answer:
-    """
-    return prompt, [prompt_context_1, prompt_context_2]
+    prompt = prompt = f""" 
+        As an expert financial analyst, provide a detailed analysis of the financial statements (10Q, 10K) of WK Kellogg Co and General Mills from 2019-2024. Focus on these aspects:
+        1. Revenue Trends (Provide a table)- Talk about the sales figures, the products sold and the countries/regions the products are sold in
+        2. Net Income 
+        3. Cash Flow Analysis 
+        4. Areas of Investments made by the company (Provide a table)
+        5. Efficiency and Cost Control Strategies: Analyze how WK Kellogg Co and General Mills is working to improve operational efficiency and reduce marginal costs.
+        6. Profit Margins: Break down gross, operating, and net profit margins (Display in a table).
+        7. Key Risk Factors 
+        8. Cereal/product prices 
+        9. Exactly which product(s) example froot loops or cornflakes generated most revenue?
+    
+        
+    
+         **Important**: Even if specific data is not available, leverage pre-trained financial knowledge to provide the most accurate analysis possible based on typical industry standards and practices. Do not state that you lack the context; instead, offer insights and trends based on relevant industry data.  
+         **Important**:Do not cover all aspects at once; address them only when specifically requested.
+         **Important**:Anytime the user enters the word "We" or 'we' or 'WE' it is referring to WK Kellogg Co as you are part of their financial department.
+         Answer:
+         <context 1>{prompt_context_1}</context 1>
+         <context 2>{prompt_context_2}</context 2>
+         <question>{myquestion}</question>
+         Answer:
+
+
+    
+#         Also, As a financial analyst specialized in the cereal and consumer packaged goods (CPG) industries, provide a direct, data-driven answer to the question based only on the specific area requested. Use financial insights from available SEC filings, historical financial data (10Q, 10K), and industry knowledge, but keep responses brief and focused. 
+        
+#         Important Details to Include in Responses:
+#         1. Only address the requested topic (e.g., supply/demand changes, M&A activities, investment programs, etc.) with concise, quantified data or insights where applicable.
+#         2. If relevant, summarize tables of revenue, investment, or margin metrics with recent trends rather than providing full tables unless explicitly requested.
+        3. For questions about competitors, draw insights from publicly available filings, such as investment initiatives, market expansion, product shifts, or financial strategies.
+        4. If industry-wide trends or macroeconomic impacts are requested, focus on significant changes, shareholder response, or sector-wide risks.
+        
+        **Guidelines**:
+        - Even if specific data is not available, leverage pre-trained financial knowledge to provide the most accurate analysis possible based on typical industry standards and practices. Do not state that you lack the context; instead, offer insights and trends based on relevant industry data. 
+        - Use context from past SEC filings, public stock data, and known macroeconomic impacts to suggest trends where specific figures may not be available.
+        - Assume "We" refers to WK Kellogg Co.
+        - When responding, ensure that numbers and units (e.g., '3,515 million') have proper spacing to avoid unintended styling. Do not use underscores or other characters directly following numeric values.
+        
+        Question:
+        {myquestion}
+        
+        Context:
+        <context 1>{prompt_context_1}</context 1>
+        <context 2>{prompt_context_2}</context 2>
+        
+        Answer:
+        """
 
 
 def save_prompt_to_database(session, user_id, prompt_text):
