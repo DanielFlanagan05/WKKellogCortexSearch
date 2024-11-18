@@ -565,7 +565,7 @@ def summarize_response(response):
 def answer_question(myquestion):
     
     prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt) 
+    response = Complete(st.session_state.model_name, prompt, session=session) 
     cleaned_response = clean_response(response)
 
     summary = summarize_response(cleaned_response)
