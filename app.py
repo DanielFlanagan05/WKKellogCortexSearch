@@ -226,15 +226,23 @@ def export_notes_to_pdf():
         pdf.ln(5)  # Add space between notes
 
     # Save the PDF to a BytesIO object
-    pdf_buffer = io.BytesIO()
-    pdf.output(pdf_buffer)
-    pdf_buffer.seek(0)
+    # pdf_buffer = io.BytesIO()
+    # pdf.output(pdf_buffer)
+    # pdf_buffer.seek(0)
+
+    # Save the PDF to a temporary file
+    pdf_file = "/tmp/notes.pdf"
+    pdf.output(pdf_file)
 
     # Provide a download link in the sidebar
-    b64_pdf = base64.b64encode(pdf_buffer.read()).decode('latin1')
-    href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">📥 Download Notes as PDF</a>'
-    st.sidebar.markdown(href, unsafe_allow_html=True)
-
+    # b64_pdf = base64.b64encode(pdf_buffer.read()).decode('latin1')
+    # href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">📥 Download Notes as PDF</a>'
+    # st.sidebar.markdown(href, unsafe_allow_html=True)
+    # Provide a download link in the sidebar
+    with open(pdf_file, "rb") as file:
+        b64_pdf = base64.b64encode(file.read()).decode("utf-8")
+        href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">Download Notes as PDF</a>'
+        st.sidebar.markdown(href, unsafe_allow_html=True)
 
 
 ### Functions
