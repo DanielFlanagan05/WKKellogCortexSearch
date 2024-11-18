@@ -17,7 +17,7 @@
 header {visibility: hidden;}
 
 /* TODO: Remove comment before demo */ 
-/* footer {visibility: hidden;} */
+footer {visibility: hidden;}
 
 
 .fixed-header {
