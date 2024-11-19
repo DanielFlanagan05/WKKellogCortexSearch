@@ -391,7 +391,6 @@ def config_options():
                     # Update the last processed prompt
                     st.session_state['last_processed_prompt'] = selected_past_prompt
 
-    st.sidebar.expander("Session State").write(st.session_state)
 
 def init_messages():
     if st.session_state.clear_conversation or "messages" not in st.session_state:
