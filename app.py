@@ -752,6 +752,10 @@ def main():
             st.session_state.show_recommendations = False
             st.rerun()
 
+        st.sidebar.markdown("## 📄 Response Summary")
+        if "summary" in st.session_state:
+            st.sidebar.write(st.session_state.summary)
+
         # Reset recommendations when "Start Over" button is clicked
         if st.button("Start Over"):
             start_over()
