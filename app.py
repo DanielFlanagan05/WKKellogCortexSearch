@@ -577,33 +577,61 @@ def start_over():
     st.rerun()
 
 ## REMOVE 
-def list_all_datasets(session):
-    # Query the information schema to list all files in the DOCS stage
-    datasets_query = """
-    LIST @DOCS;
-    """
-    
-    # Execute the query and collect the results
-    datasets = session.sql(datasets_query).collect()
-    
-    # Convert the results to a pandas DataFrame for better visualization
-    df_datasets = pd.DataFrame(datasets)
-    df_datasets.columns = ["File Name", "Size", "Last Modified"]
-    return df_datasets
+def list_stage_files(session, stage_name):
+    try:
+        query = f"LIST @{stage_name};"
+        files = session.sql(query).collect()
+        
+        # Convert the result to a DataFrame
+        df_files = pd.DataFrame(files)
+        df_files.columns = ["File Path", "Size (Bytes)", "Last Modified"]
+        return df_files
+    except Exception as e:
+        st.error(f"Error listing files in stage {stage_name}: {e}")
+        return None
+
 
 # REMOVE
-def display_datasets(session):
-    st.sidebar.markdown("## Available Datasets")
+def fetch_stage_file_content(session, stage_name, file_name):
+    try:
+        # Create a temporary table to load data
+        temp_table = "TEMP_STAGE_TABLE"
+        session.sql(f"CREATE OR REPLACE TEMP TABLE {temp_table} AS SELECT * FROM VALUES ();").collect()
+        
+        # Copy the file content into the temporary table
+        session.sql(f"""
+            COPY INTO {temp_table}
+            FROM @{stage_name}/{file_name}
+            FILE_FORMAT = (TYPE = 'CSV' SKIP_HEADER = 1 FIELD_OPTIONALLY_ENCLOSED_BY = '"');
+        """).collect()
+        
+        # Query the content
+        content = session.table(temp_table).collect()
+        df_content = pd.DataFrame(content)
+        return df_content
+    except Exception as e:
+        st.error(f"Error fetching content of file {file_name} from stage {stage_name}: {e}")
+        return None
+
+def display_stage_files(session, stage_name):
+    st.sidebar.markdown("## Stage Files")
     
-    if st.sidebar.button("Show Datasets"):
-        try:
-            df_datasets = list_all_datasets(session)
-            
-            # Display the datasets in the main app area
-            st.markdown("### Available Datasets")
-            st.dataframe(df_datasets)
-        except Exception as e:
-            st.error(f"Error fetching datasets: {e}")
+    # List files in the stage
+    df_files = list_stage_files(session, stage_name)
+    if df_files is not None:
+        st.markdown("### Files in Stage")
+        st.dataframe(df_files)
+
+        # Allow user to select a file to view its content
+        selected_file = st.selectbox("Select a file to view:", df_files["File Path"].values)
+        
+        if selected_file and st.button("Load File Content"):
+            # Fetch and display file content
+            df_content = fetch_stage_file_content(session, stage_name, selected_file)
+            if df_content is not None:
+                st.markdown(f"### Contents of File: {selected_file}")
+                st.dataframe(df_content)
+
 
 
 def main():
@@ -618,7 +646,7 @@ def main():
         init_messages()
         notes_section()
 
-        display_datasets(session)
+        display_stage_files(session, "DOCS")
 
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
