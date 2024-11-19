@@ -456,6 +456,8 @@ def create_prompt(myquestion):
     try:
         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
+        prompt_context_1 = preprocess_text(prompt_context_1)
+        prompt_context_2 = preprocess_text(prompt_context_2)
     except Exception as e:
         st.error(f"Error parsing search response JSON: {e}")
         prompt_context_1 = []
@@ -533,6 +535,14 @@ def display_welcome_message():
         """,
         unsafe_allow_html=True
     )
+
+# Removes extra spaces and special characters from the text, inserts space between numbers and letters. Should fix formatting issues in the response.
+def preprocess_text(text):
+    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r'(\d)([a-zA-Z])', r'\1 \2', text)
+    text = re.sub(r'([a-zA-Z])(\d)', r'\1 \2', text)
+    text = re.sub(r'\b[a-zA-Z]\b', '', text)
+    return text.strip()
 
 def clean_response(response):
     
