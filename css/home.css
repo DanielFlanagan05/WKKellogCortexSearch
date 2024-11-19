@@ -215,7 +215,7 @@ header {visibility: hidden;}
     margin-bottom: 15px;
 }
 
-.e1f1d6gn1 input {
+#text_input_1, #text_input_2  {
     color:rgba(175, 175, 175, 0.1)
 }
 
