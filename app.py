@@ -358,9 +358,9 @@ def config_options():
         if user_id:
             past_prompts_df = session.table('user_prompts') \
                 .filter(f"user_id = {user_id}") \
-                .select('prompt_text', 'id') \
+                .select('prompt_text', 'response_text', 'id') \
                 .order_by('id', ascending=False) \
-                .limit(10) \
+                .limit(15) \
                 .collect()
             past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
 
@@ -378,14 +378,22 @@ def config_options():
                 )
                 if (selected_past_prompt and selected_past_prompt != 'Select a prompt' and
                     selected_past_prompt != st.session_state['last_processed_prompt']):
-                    # Process the prompt
+
+                    # get the response for the selected prompt
+                    for row in past_prompts_df:
+                        if row['PROMPT_TEXT'][:100] == selected_past_prompt:
+                            saved_response = row['RESPONSE_TEXT']
+                            break
+
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
-                    answer, summary, _ = answer_question(selected_past_prompt)
+                    st.session_state.messages.append({"role": "assistant", "content": saved_response})
+
+                    # answer, summary, _ = answer_question(selected_past_prompt)
                     with st.chat_message("user"):
                         st.markdown(selected_past_prompt)
                     with st.chat_message("assistant"):
-                        st.markdown(answer)
-                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                        st.markdown(saved_response)
+                    # st.session_state.messages.append({"role": "assistant", "content": answer})
                     st.session_state.show_recommendations = False
 
                     # Update the last processed prompt
@@ -514,12 +522,12 @@ def create_prompt(myquestion):
 
 
 
-def save_prompt_to_database(session, user_id, prompt_text):
+def save_prompt_to_database(session, user_id, prompt_text, response_text):
     if user_id is None or not prompt_text:
         raise ValueError("User ID and prompt text must not be NULL or empty")
 
     # Insert data into the table using the insert method
-    sql_query = f"INSERT INTO user_prompts (user_id, prompt_text) VALUES ('{user_id}', '{prompt_text}')"
+    sql_query = f"INSERT INTO user_prompts (user_id, prompt_text, response_text) VALUES ('{user_id}', '{prompt_text}', '{response_text})"
 
     session.sql(sql_query).collect()  
 
@@ -644,11 +652,6 @@ def main():
         if prompt := st.chat_input("Ask a question:"):
             st.session_state.messages.append({"role": "user", "content": prompt})
 
-            # Save prompt to database
-            user_id = st.session_state.get('user_id')
-            if user_id:
-                save_prompt_to_database(session, user_id, prompt)
-
             answer, summary, _ = answer_question(prompt)
 
             with st.chat_message("user"):
@@ -659,6 +662,11 @@ def main():
 
             st.session_state.messages.append({"role": "assistant", "content": answer})
             st.session_state.summary = summary
+
+            # Save prompt and response to database
+            user_id = st.session_state.get('user_id')
+            if user_id:
+                save_prompt_to_database(session, user_id, prompt, answer)
 
             # Hides the recommendations after a user submits a prompt
             st.session_state.show_recommendations = False

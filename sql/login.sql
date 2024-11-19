@@ -10,5 +10,6 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS user_prompts (
     id INTEGER AUTOINCREMENT PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    prompt_text STRING NOT NULL
+    prompt_text STRING NOT NULL,
+    response_text STRING
 );
