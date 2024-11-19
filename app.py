@@ -168,13 +168,15 @@ def load_custom_styles():
 def add_header():
     if st.session_state['logged_in']:
         # Display the header with the logout button
+        existing_user = session.sql(f"SELECT username FROM users WHERE id = '{st.session_state.get('user_id')}'").collect()
+
         username = st.session_state.get('user_id', 'User')
         st.markdown(
             f"""
             <div class='fixed-header'>
             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
             <h2 id='ask-kai'>Ask KAI!</h2>
-            <p id='username-display'>Logged in as {username}</p>
+            <p id='username-display'>Logged in as {existing_user}</p>
             <a href="?logout=true" target="_self" id="logout_button">Logout</a>
             </div>
             """,
