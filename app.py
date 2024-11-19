@@ -373,37 +373,58 @@ def init_messages():
 svc_file_1 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 svc_file_2 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 
-def get_similar_chunks_search_service(query):
-    # Fetching responses from both services as in Document 1
-    try:
-        if st.session_state.category_value == "ALL":
-            response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
-            response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
-        else:
-            filter_obj = {"@eq": {"category": st.session_state.category_value}}
-            response_file_1 = svc_file_1.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
-            response_file_2 = svc_file_2.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
+# def get_similar_chunks_search_service(query):
+#     # Fetching responses from both services as in Document 1
+#     try:
+#         if st.session_state.category_value == "ALL":
+#             response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
+#             response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
+#         else:
+#             filter_obj = {"@eq": {"category": st.session_state.category_value}}
+#             response_file_1 = svc_file_1.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
+#             response_file_2 = svc_file_2.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
         
-        # Parse JSON responses from both services
-        json_response_1 = json.loads(response_file_1.json())
-        json_response_2 = json.loads(response_file_2.json())
+#         # Parse JSON responses from both services
+#         json_response_1 = json.loads(response_file_1.json())
+#         json_response_2 = json.loads(response_file_2.json())
 
-        # Combine the 'results' key from both JSON responses
-        combined_response = {
-            "results": json_response_1.get('results', []) + json_response_2.get('results', [])
-        }
+#         # Combine the 'results' key from both JSON responses
+#         combined_response = {
+#             "results": json_response_1.get('results', []) + json_response_2.get('results', [])
+#         }
         
-        # Debugging information for both responses
-        if st.session_state.debug:
-            st.sidebar.write(f"Response from service 1: {json_response_1}")
-            st.sidebar.write(f"Response from service 2: {json_response_2}")
+#         # Debugging information for both responses
+#         if st.session_state.debug:
+#             st.sidebar.write(f"Response from service 1: {json_response_1}")
+#             st.sidebar.write(f"Response from service 2: {json_response_2}")
         
-        # Return the combined JSON response
-        return json.dumps(combined_response)
+#         # Return the combined JSON response
+#         return json.dumps(combined_response)
     
+#     except Exception as e:
+#         st.error(f"Failed to fetch or parse the service response: {e}")
+#         return {}
+    
+def get_similar_chunks_search_service(query):
+    # Fetch the response from both services
+    response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
+    response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
+    # Use json.loads to convert the response to a dictionary
+    try:
+        json_response_1 = json.loads(response_file_1.json())  # Parse the JSON string
+        json_response_2 = json.loads(response_file_2.json())  # Parse the JSON string
     except Exception as e:
-        st.error(f"Failed to fetch or parse the service response: {e}")
+        st.error(f"Failed to parse JSON response: {e}")
         return {}
+    # Access the 'results' key from the JSON response
+    results_1 = json_response_1.get('results', [])
+    results_2 = json_response_2.get('results', [])
+    # Combine results from both responses
+    combined_response = {
+        "results": results_1 + results_2
+    }
+    st.sidebar.json(combined_response)
+    return json.dumps(combined_response)
 
 
 # Summarize chat history with the current question
