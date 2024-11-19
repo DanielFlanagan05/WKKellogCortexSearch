@@ -371,43 +371,22 @@ def config_options():
                 st.session_state['last_processed_prompt'] = None
 
             if past_prompts:
-                selected_past_prompt = st.sidebar.selectbox(
-                    'Past Chats',
-                    ['Select a prompt'] + past_prompts,
-                    key='past_chats_selectbox'
-                )
-                if (selected_past_prompt and selected_past_prompt != 'Select a prompt' and
-                    selected_past_prompt != st.session_state['last_processed_prompt']):
-                    # Process the prompt
-                    st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
-                    answer, summary, _ = answer_question(selected_past_prompt)
-                    with st.chat_message("user"):
-                        st.markdown(selected_past_prompt)
-                    with st.chat_message("assistant"):
-                        st.markdown(answer)
-                    # st.session_state.messages.append({"role": "assistant", "content": answer})
-                    st.session_state.show_recommendations = False
+                    selected_past_prompt = st.sidebar.selectbox(
+                        'Past Chats',
+                        ['Select a prompt'] + past_prompts,
+                        key='past_chats_selectbox'
+                    )
+                    if (selected_past_prompt and selected_past_prompt != 'Select a prompt' and
+                        selected_past_prompt != st.session_state['last_processed_prompt']):
+                        # Process the prompt
+                        st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
+                        answer, summary, _ = answer_question(selected_past_prompt)
+                        st.session_state.messages.append({"role": "assistant", "content": answer})
+                        st.session_state.summary = summary  # Save summary if needed
+                        st.session_state.show_recommendations = False
 
-                    # Update the last processed prompt
-                    st.session_state['last_processed_prompt'] = selected_past_prompt
-
-                #             if past_prompts:
-                # selected_past_prompt = st.sidebar.selectbox(
-                #     'Past Chats',
-                #     ['Select a prompt'] + past_prompts,
-                #     key='past_chats_selectbox'
-                # )
-                # if (selected_past_prompt and selected_past_prompt != 'Select a prompt' and
-                #     selected_past_prompt != st.session_state['last_processed_prompt']):
-                #     # Process the prompt
-                #     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
-                #     answer, summary, _ = answer_question(selected_past_prompt)
-                #     st.session_state.messages.append({"role": "assistant", "content": answer})
-                #     st.session_state.show_recommendations = False
-
-                #     # Update the last processed prompt
-                #     st.session_state['last_processed_prompt'] = selected_past_prompt
-
+                        # Update the last processed prompt
+                        st.session_state['last_processed_prompt'] = selected_past_prompt
 
 def init_messages():
     if st.session_state.clear_conversation or "messages" not in st.session_state:
