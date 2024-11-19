@@ -44,11 +44,21 @@ header {visibility: hidden;}
 
 
 /* Styles the Ask Kai! text / header (h2 tag)*/
-#ask-kai, #username-display {
+#ask-kai {
     font-size: 32px;
     font-weight: bold;
     color: white;
     z-index: 2; 
+}
+
+/* Styles the username thats displayed in header */
+#username-display {
+    right: 20px;
+    top: 10px;
+    left: auto;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 /* Make login or register text black to appear better on white bg */
