@@ -578,18 +578,6 @@ def start_over():
     st.session_state['last_processed_prompt'] = None
     st.rerun()
 
-#REMOVE
-def list_documents(session, stage_path="DATA.DOCS"):
-    try:
-        # Execute the LIST command for the specified stage
-        result = session.sql(f"LIST @{stage_path}").collect()
-        # Format the results into a list of dictionaries
-        documents = [{"File Name": row["name"], "Size (Bytes)": row["size"], "Last Modified": row["last_modified"]} for row in result]
-        return documents
-    except Exception as e:
-        st.error(f"Failed to list documents: {e}")
-        return []
-
 
 def main():
     if st.session_state['logged_in']:
@@ -603,18 +591,6 @@ def main():
         init_messages()
         notes_section()
 
-#REMOVE
-        st.title("Documents in DATA/DOCS")
-
-        # Fetch and display the document list
-        documents = list_documents(session)
-        if documents:
-            df = pd.DataFrame(documents)
-            st.dataframe(df)  # Display as an interactive table
-        else:
-            st.info("No documents found in the stage.")
-        
-        # END REMOVE
 
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
