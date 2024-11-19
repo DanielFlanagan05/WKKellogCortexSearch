@@ -168,12 +168,14 @@ def load_custom_styles():
 def add_header():
     if st.session_state['logged_in']:
         # Display the header with the logout button
+        username = st.session_state.get('user_id', 'User')
         st.markdown(
-            """
+            f"""
             <div class='fixed-header'>
-                <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
-                <h2 id='ask-kai'>Ask KAI!</h2>
-                <a href="?logout=true" target="_self" id="logout_button">Logout</a>
+            <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
+            <h2 id='ask-kai'>Ask KAI!</h2>
+            <p id='username-display'>Welcome, {username}</p>
+            <a href="?logout=true" target="_self" id="logout_button">Logout</a>
             </div>
             """,
             unsafe_allow_html=True
