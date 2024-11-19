@@ -174,7 +174,7 @@ def add_header():
             <div class='fixed-header'>
             <img src='https://i.ytimg.com/vi/X13SUD8iD-8/maxresdefault.jpg' alt='WK Kellogg Co Logo'>
             <h2 id='ask-kai'>Ask KAI!</h2>
-            <p id='username-display'>Welcome, {username}</p>
+            <p id='username-display'>Logged in as {username}</p>
             <a href="?logout=true" target="_self" id="logout_button">Logout</a>
             </div>
             """,

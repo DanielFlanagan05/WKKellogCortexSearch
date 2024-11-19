@@ -44,7 +44,7 @@ header {visibility: hidden;}
 
 
 /* Styles the Ask Kai! text / header (h2 tag)*/
-#ask-kai {
+#ask-kai, #username-display {
     font-size: 32px;
     font-weight: bold;
     color: white;
@@ -258,6 +258,10 @@ header {visibility: hidden;}
         font-size: 24px;
         text-align: center;
         margin: 0 auto;
+    }
+
+    #username-display {
+        display: none;
     }
 
     /* Scale down logout button */
