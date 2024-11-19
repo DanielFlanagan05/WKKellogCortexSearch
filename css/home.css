@@ -6,7 +6,11 @@
 .stSidebar {
     /* background: linear-gradient(to bottom, #ffffff, #ffffff, #ffffff); */
     background: #d5d5d5;
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
+}
+
+.stButton p{
+    color: white;
 }
 
 #MainMenu {visibility: hidden;}
