@@ -537,14 +537,13 @@ def save_prompt_to_database(session, user_id, prompt_text, response_text):
 
     sql_query = """
         INSERT INTO user_prompts (user_id, prompt_text, response_text)
-        VALUES (%(user_id)s, %(prompt_text)s, %(response_text)s)
+        VALUES (?, ?, ?)
     """
-    params = {
-        "user_id": user_id,
-        "prompt_text": prompt_text,
-        "response_text": response_text
-    }
-    session.sql(sql_query).params(params).collect()
+    try:
+        session.sql(sql_query).bind((user_id, prompt_text, response_text)).collect()
+    except Exception as e:
+        st.error(f"Error saving prompt to database: {e}")
+
 
 
 def display_welcome_message():
