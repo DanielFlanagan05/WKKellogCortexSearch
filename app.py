@@ -356,10 +356,6 @@ def config_options():
                     # Update the last processed prompt
                     st.session_state['last_processed_prompt'] = selected_past_prompt
 
-
-    else:
-        st.sidebar.write("Please login to access past chats.")
-
     st.sidebar.expander("Session State").write(st.session_state)
 
 def init_messages():
