@@ -564,8 +564,10 @@ def answer_question(myquestion):
 
 # Get chat history
 def get_chat_history():
+    chat_history = []
     start_index = max(0, len(st.session_state.messages) - SLIDE_WINDOW)
-    return [msg["content"] for msg in st.session_state.messages[start_index:]]
+    chat_history.extend(st.session_state.messages[start_index:])
+    return chat_history
     
 # Resets the chat, reccomendations, selected prompt from history, and reruns the app
 def start_over():
@@ -613,7 +615,7 @@ def main():
             st.info("No documents found in the stage.")
         
         # END REMOVE
-        
+
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
             if "summary" in st.session_state and st.session_state.summary:
