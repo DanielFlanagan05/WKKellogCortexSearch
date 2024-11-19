@@ -253,15 +253,6 @@ def export_notes_to_pdf():
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">Download Notes as PDF</a>'
         st.sidebar.markdown(href, unsafe_allow_html=True)
 
-# def display_sidebar_summary_button():
-#     if st.sidebar.button("Show Summary of Response"):
-#         st.session_state.show_summary = True
-
-#     if st.session_state.get("show_summary", False):
-#         st.sidebar.markdown("## 📄 Response Summary")
-#         if "summary" in st.session_state:
-#             st.sidebar.write(st.session_state.summary)
-
 def export_summary_to_pdf(summary):
     if not summary:
         st.sidebar.warning("No summary available to export.")
@@ -412,38 +403,7 @@ def init_messages():
 svc_file_1 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 svc_file_2 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 
-# def get_similar_chunks_search_service(query):
-#     # Fetching responses from both services as in Document 1
-#     try:
-#         if st.session_state.category_value == "ALL":
-#             response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
-#             response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
-#         else:
-#             filter_obj = {"@eq": {"category": st.session_state.category_value}}
-#             response_file_1 = svc_file_1.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
-#             response_file_2 = svc_file_2.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
-        
-#         # Parse JSON responses from both services
-#         json_response_1 = json.loads(response_file_1.json())
-#         json_response_2 = json.loads(response_file_2.json())
 
-#         # Combine the 'results' key from both JSON responses
-#         combined_response = {
-#             "results": json_response_1.get('results', []) + json_response_2.get('results', [])
-#         }
-        
-#         # Debugging information for both responses
-#         if st.session_state.debug:
-#             st.sidebar.write(f"Response from service 1: {json_response_1}")
-#             st.sidebar.write(f"Response from service 2: {json_response_2}")
-        
-#         # Return the combined JSON response
-#         return json.dumps(combined_response)
-    
-#     except Exception as e:
-#         st.error(f"Failed to fetch or parse the service response: {e}")
-#         return {}
-    
 def get_similar_chunks_search_service(query):
     # Fetch the response from both services
     response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
@@ -477,50 +437,6 @@ def summarize_question_with_history(chat_history, question):
 """    
     summary = Complete(st.session_state.model_name, prompt, session=session)
     return summary.replace("'", "")
-
-# def create_prompt(myquestion):
-#     if st.session_state.use_chat_history:
-#         chat_history = get_chat_history()
-#         if chat_history:
-#             question_summary = summarize_question_with_history(chat_history, myquestion)
-#             response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-#             response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-#         else:
-#             response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-#             response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-#     else:
-#         response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-#         response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
- 
-#     # Parse the response as JSON using json.loads()
-#     try:
-#         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
-#         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
-#     except Exception as e:
-#         st.error(f"Error parsing search response JSON: {e}")
-#         prompt_context_1 = []
-#         prompt_context_2 = []
-
-#     # Combine results with clear distinction in the prompt
-#     prompt = prompt = f"""
-#     As an expert financial analyst, provide a detailed analysis of the financial statements (10Q, 10K) of WK Kellogg Co and General Mills from 2019-2023. Focus on these aspects:
-#     1. Revenue Trends (Provide a table)
-#     2. Net Income 
-#     3. Cash Flow Analysis 
-#     4. Areas of Investments made by the company (Provide a table)
-#     5. Efficiency and Cost Control Strategies: Analyze how WK Kellogg Co and General Mills is working to improve operational efficiency and reduce marginal costs.
-#     6. Profit Margins: Break down gross, operating, and net profit margins (Display in a table).
-#     7. Key Risk Factors
-
-#     **Important**: Even if specific data is not available, leverage pre-trained financial knowledge to provide the most accurate analysis possible based on typical industry standards and practices. Do not state that you lack the context; instead, offer insights and trends based on relevant industry data.  
-#     **Important**:Do not cover all aspects at once; address them only when specifically requested.
-#     Answer:
-#     <context 1>{prompt_context_1}</context 1>
-#     <context 2>{prompt_context_2}</context 2>
-#     <question>{myquestion}</question>
-#     Answer:
-#     """
-#     return prompt, [prompt_context_1, prompt_context_2]
 
 def create_prompt(myquestion):
     if st.session_state.use_chat_history:
@@ -637,11 +553,6 @@ def summarize_response(response):
 
 
 # Answer the question using the assistant
-# def answer_question(myquestion):
-#     prompt, relative_paths = create_prompt(myquestion)
-#     response = Complete(st.session_state.model_name, prompt, session=session)
-#     return response, relative_paths
-
 def answer_question(myquestion):
     
     prompt, relative_paths = create_prompt(myquestion)
@@ -656,6 +567,7 @@ def get_chat_history():
     start_index = max(0, len(st.session_state.messages) - SLIDE_WINDOW)
     return [msg["content"] for msg in st.session_state.messages[start_index:]]
     
+# Resets the chat, reccomendations, selected prompt from history, and reruns the app
 def start_over():
     st.session_state.show_recommendations = True
     st.session_state.messages = [] 
@@ -666,7 +578,6 @@ def start_over():
 
 def main():
     if st.session_state['logged_in']:
-        # Configure sidebar options and initialize messages
         # Checks for reset flag in session state
         if st.session_state.get("reset_requested", False): 
             st.session_state["reset_requested"] = False
@@ -676,9 +587,7 @@ def main():
         config_options()
         init_messages()
         notes_section()
-        # display_sidebar_summary_button()
 
-        # Add Export Summary functionality
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
             if "summary" in st.session_state and st.session_state.summary:
@@ -689,8 +598,7 @@ def main():
         st.sidebar.markdown("## Export Chat")
         if st.sidebar.button("Export Chat as PDF"):
             export_chat_to_pdf()
-        else:
-            st.sidebar.warning("Generate a response summary first before exporting.") 
+
 
 
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
