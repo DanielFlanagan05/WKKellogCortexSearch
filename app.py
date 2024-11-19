@@ -600,6 +600,9 @@ def main():
         init_messages()
         notes_section()
 
+        st.sidebar.markdown("## Export Chat")
+        if st.sidebar.button("Export Chat as PDF"):
+            export_chat_to_pdf()
 
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
@@ -608,9 +611,6 @@ def main():
             else:
                 st.sidebar.warning("Generate a response summary first before exporting.")
 
-        st.sidebar.markdown("## Export Chat")
-        if st.sidebar.button("Export Chat as PDF"):
-            export_chat_to_pdf()
 
 
 
