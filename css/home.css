@@ -215,11 +215,6 @@ header {visibility: hidden;}
     margin-bottom: 15px;
 }
 
-#text_input_1, #text_input_2  {
-    color:rgba(175, 175, 175, 0.1)
-}
-
-
 
 #logout_button {
     position: absolute;
