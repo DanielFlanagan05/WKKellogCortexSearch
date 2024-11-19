@@ -576,6 +576,39 @@ def start_over():
     st.session_state['last_processed_prompt'] = None
     st.rerun()
 
+## REMOVE 
+def list_all_datasets(session):
+    # Query the information schema to list all tables and views
+    datasets_query = """
+    SELECT table_schema, table_name, table_type
+    FROM information_schema.tables
+    WHERE table_type IN ('BASE TABLE', 'VIEW')
+    ORDER BY table_schema, table_name;
+    """
+    
+    # Execute the query and collect the results
+    datasets = session.sql(datasets_query).collect()
+    
+    # Convert the results to a pandas DataFrame for better visualization
+    df_datasets = pd.DataFrame(datasets)
+    df_datasets.columns = ["Schema", "Table/View Name", "Type"]
+    return df_datasets
+
+# REMOVE
+def display_datasets(session):
+    st.sidebar.markdown("## Available Datasets")
+    
+    if st.sidebar.button("Show Datasets"):
+        try:
+            df_datasets = list_all_datasets(session)
+            
+            # Display the datasets in the main app area
+            st.markdown("### Available Datasets")
+            st.dataframe(df_datasets)
+        except Exception as e:
+            st.error(f"Error fetching datasets: {e}")
+
+
 def main():
     if st.session_state['logged_in']:
         # Checks for reset flag in session state
@@ -588,6 +621,8 @@ def main():
         init_messages()
         notes_section()
 
+        display_datasets(session)
+        
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
             if "summary" in st.session_state and st.session_state.summary:
