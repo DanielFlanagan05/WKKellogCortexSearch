@@ -215,6 +215,10 @@ header {visibility: hidden;}
     margin-bottom: 15px;
 }
 
+.welcome-subheading h2 {
+    color: black;   
+}
+
 
 #logout_button {
     position: absolute;
