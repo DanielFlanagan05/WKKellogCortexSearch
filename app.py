@@ -686,6 +686,13 @@ def main():
             else:
                 st.sidebar.warning("Generate a response summary first before exporting.")
 
+        st.sidebar.markdown("## Export Chat")
+        if st.sidebar.button("Export Chat as PDF"):
+            export_chat_to_pdf()
+        else:
+            st.sidebar.warning("Generate a response summary first before exporting.") 
+
+
         # Show recommendations only when the page is first loaded or when "Start Over" is clicked
         if 'show_recommendations' not in st.session_state:
             st.session_state.show_recommendations = True  
