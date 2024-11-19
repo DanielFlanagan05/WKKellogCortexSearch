@@ -54,7 +54,7 @@ header {visibility: hidden;}
 /* Styles the username thats displayed in header */
 #username-display {
     right: 20px;
-    top: 10px;
+    margin-top: 15px;
     left: auto;
     color: white;
     font-size: 16px;
