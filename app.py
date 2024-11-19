@@ -522,14 +522,30 @@ def create_prompt(myquestion):
 
 
 
+# def save_prompt_to_database(session, user_id, prompt_text, response_text):
+#     if user_id is None or not prompt_text:
+#         raise ValueError("User ID and prompt text must not be NULL or empty")
+
+#     # Insert data into the table using the insert method
+#     sql_query = f"INSERT INTO user_prompts (user_id, prompt_text, response_text) VALUES ('{user_id}', '{prompt_text}', '{response_text})"
+
+#     session.sql(sql_query).collect()  
+
 def save_prompt_to_database(session, user_id, prompt_text, response_text):
     if user_id is None or not prompt_text:
         raise ValueError("User ID and prompt text must not be NULL or empty")
 
-    # Insert data into the table using the insert method
-    sql_query = f"INSERT INTO user_prompts (user_id, prompt_text, response_text) VALUES ('{user_id}', '{prompt_text}', '{response_text})"
+    sql_query = """
+        INSERT INTO user_prompts (user_id, prompt_text, response_text)
+        VALUES (%(user_id)s, %(prompt_text)s, %(response_text)s)
+    """
+    params = {
+        "user_id": user_id,
+        "prompt_text": prompt_text,
+        "response_text": response_text
+    }
+    session.sql(sql_query).params(params).collect()
 
-    session.sql(sql_query).collect()  
 
 def display_welcome_message():
     st.markdown(
