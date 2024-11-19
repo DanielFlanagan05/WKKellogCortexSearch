@@ -253,14 +253,14 @@ def export_notes_to_pdf():
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">Download Notes as PDF</a>'
         st.sidebar.markdown(href, unsafe_allow_html=True)
 
-def display_sidebar_summary_button():
-    if st.sidebar.button("Show Summary of Response"):
-        st.session_state.show_summary = True
+# def display_sidebar_summary_button():
+#     if st.sidebar.button("Show Summary of Response"):
+#         st.session_state.show_summary = True
 
-    if st.session_state.get("show_summary", False):
-        st.sidebar.markdown("## 📄 Response Summary")
-        if "summary" in st.session_state:
-            st.sidebar.write(st.session_state.summary)
+#     if st.session_state.get("show_summary", False):
+#         st.sidebar.markdown("## 📄 Response Summary")
+#         if "summary" in st.session_state:
+#             st.sidebar.write(st.session_state.summary)
 
 def export_summary_to_pdf(summary):
     if not summary:
@@ -676,7 +676,7 @@ def main():
         config_options()
         init_messages()
         notes_section()
-        display_sidebar_summary_button()
+        # display_sidebar_summary_button()
 
         # Add Export Summary functionality
         st.sidebar.markdown("## Export Summary")
