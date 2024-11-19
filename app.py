@@ -311,14 +311,11 @@ def config_options():
     st.sidebar.markdown(f"### Selected Model: **{selected_model}**")
     st.sidebar.write(MODEL_DESCRIPTIONS[selected_model])
 
-
-    # st.sidebar.selectbox('Select your model:', (
-    #     'mixtral-8x7b', 'snowflake-arctic', 'mistral-large', 'llama3-8b', 'llama3-70b', 'reka-flash', 'mistral-7b', 'llama2-70b-chat', 'gemma-7b'), key="model_name")
     categories = session.table('docs_chunks_table').select('category').distinct().collect()
     cat_list = ['ALL'] + [cat.CATEGORY for cat in categories]
-    st.sidebar.selectbox('Select product category', cat_list, key="category_value")
+    # st.sidebar.selectbox('Select product category', cat_list, key="category_value")
     st.sidebar.checkbox('Remember chat history?', key="use_chat_history", value=True)
-    st.sidebar.checkbox('Show debug info', key="debug", value=True)
+    # st.sidebar.checkbox('Show debug info', key="debug", value=True)
     st.sidebar.button("Start Over", key="clear_conversation", on_click=start_over)
 
     if st.session_state.get('logged_in'):
