@@ -6,12 +6,7 @@
 .stSidebar {
     /* background: linear-gradient(to bottom, #ffffff, #ffffff, #ffffff); */
     background: #d5d5d5;
-    color: black;
-}
-
-/* This sets the color of the "Session state" text in the sidebar to white for readability */
-.st-emotion-cache-uef7qa p {
-    color: #ffffff
+    color: rgb(255, 255, 255);
 }
 
 #MainMenu {visibility: hidden;}
