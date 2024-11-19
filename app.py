@@ -383,9 +383,9 @@ def config_options():
                     answer, summary, _ = answer_question(selected_past_prompt)
                     with st.chat_message("user"):
                         st.markdown(selected_past_prompt)
-                    # with st.chat_message("assistant"):
-                    #     st.markdown(answer)
-                    st.session_state.messages.append({"role": "assistant", "content": answer})
+                    with st.chat_message("assistant"):
+                        st.markdown(answer)
+                    # st.session_state.messages.append({"role": "assistant", "content": answer})
                     st.session_state.show_recommendations = False
 
                     # Update the last processed prompt
