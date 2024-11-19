@@ -578,12 +578,9 @@ def start_over():
 
 ## REMOVE 
 def list_all_datasets(session):
-    # Query the information schema to list all tables and views
+    # Query the information schema to list all files in the DOCS stage
     datasets_query = """
-    SELECT table_schema, table_name, table_type
-    FROM information_schema.tables
-    WHERE table_type IN ('BASE TABLE', 'VIEW')
-    ORDER BY table_schema, table_name;
+    LIST @DOCS;
     """
     
     # Execute the query and collect the results
@@ -591,7 +588,7 @@ def list_all_datasets(session):
     
     # Convert the results to a pandas DataFrame for better visualization
     df_datasets = pd.DataFrame(datasets)
-    df_datasets.columns = ["Schema", "Table/View Name", "Type"]
+    df_datasets.columns = ["File Name", "Size", "Last Modified"]
     return df_datasets
 
 # REMOVE
@@ -622,7 +619,7 @@ def main():
         notes_section()
 
         display_datasets(session)
-        
+
         st.sidebar.markdown("## Export Summary")
         if st.sidebar.button("Export Summary as PDF"):
             if "summary" in st.session_state and st.session_state.summary:
