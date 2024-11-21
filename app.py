@@ -639,7 +639,6 @@ def main():
             for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
-                    st.markdown("Test if this is where come from")
 
         # Handling user input from chat box
         if prompt := st.chat_input("Ask a question:"):
@@ -657,6 +656,8 @@ def main():
 
             with st.chat_message("assistant"):
                 st.markdown(answer)
+                #REMOVE ME
+                st.markdown("Test ask question")
 
             st.session_state.messages.append({"role": "assistant", "content": answer})
             st.session_state.summary = summary
