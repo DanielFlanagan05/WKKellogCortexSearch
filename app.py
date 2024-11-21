@@ -381,10 +381,10 @@ def config_options():
                     # Process the prompt
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
                     answer, summary, _ = answer_question(selected_past_prompt)
-                    with st.chat_message("user"):
-                        st.markdown(selected_past_prompt)
-                    with st.chat_message("assistant"):
-                        st.markdown(answer)
+                    # with st.chat_message("user"):
+                    #     st.markdown(selected_past_prompt)
+                    # with st.chat_message("assistant"):
+                    #     st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
                     st.session_state.show_recommendations = False
 
@@ -635,7 +635,7 @@ def main():
                         st.rerun()
 
         # If recommendations have been clicked, display conversation history
-        if not st.session_state.show_recommendations and st.session_state.past_chats_selectbox == 'Select a prompt':
+        if not st.session_state.show_recommendations and st.session_state.past_chats_selectbox != 'Select a prompt':
             for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     st.markdown(message["content"])
