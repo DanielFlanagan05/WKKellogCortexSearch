@@ -381,14 +381,15 @@ def config_options():
                     # Process the prompt
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
                     answer, summary, _ = answer_question(selected_past_prompt)
- 
+                    # with st.chat_message("user"):
+                    #     st.markdown(selected_past_prompt)
+                    # with st.chat_message("assistant"):
+                    #     st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
-                    st.session_state.summary = summary
                     st.session_state.show_recommendations = False
 
                     # Update the last processed prompt
                     st.session_state['last_processed_prompt'] = selected_past_prompt
-                    st.rerun()
 
 
 def init_messages():
@@ -655,7 +656,8 @@ def main():
 
             with st.chat_message("assistant"):
                 st.markdown(answer)
-
+                #REMOVE ME
+                st.markdown("Test ask question")
 
             st.session_state.messages.append({"role": "assistant", "content": answer})
             st.session_state.summary = summary
