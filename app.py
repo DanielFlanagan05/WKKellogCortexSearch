@@ -83,8 +83,8 @@ def create_snowflake_session():
     }
     # Creates Snowpark session
     session = Session.builder.configs(connection_parameters).create()
-    current_role = session.sql("SELECT CURRENT_ROLE();").collect()
-    st.write(f"Current role: {current_role[0]['CURRENT_ROLE']}")
+    # current_role = session.sql("SELECT CURRENT_ROLE();").collect()
+    # st.write(f"Current role: {current_role[0]['CURRENT_ROLE']}")
     return session
 
 # Ensures only one session is created and used
