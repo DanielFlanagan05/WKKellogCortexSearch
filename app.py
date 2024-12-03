@@ -83,6 +83,8 @@ def create_snowflake_session():
     }
     # Creates Snowpark session
     session = Session.builder.configs(connection_parameters).create()
+    current_role = session.sql("SELECT CURRENT_ROLE();").collect()
+    st.write(f"Current role: {current_role[0]['CURRENT_ROLE']}")
     return session
 
 # Ensures only one session is created and used
@@ -167,7 +169,6 @@ def load_custom_styles():
 # Adds in our custom header with the logo, app name/title and logout button
 def add_header():
     if st.session_state['logged_in']:
-        # Display the header with the logout button
         existing_user_row = session.sql(f"SELECT username FROM users WHERE id = '{st.session_state.get('user_id')}'").collect()
         existing_user = existing_user_row[0]['USERNAME'] 
 
@@ -184,13 +185,11 @@ def add_header():
             unsafe_allow_html=True
         )
 
-        # Check for the logout query parameter
         if st.query_params.get("logout") == "true":
             st.session_state['logged_in'] = False
             st.query_params.from_dict({})  
             st.rerun()
     else:
-        # Display the header without the logout button
         st.markdown(
             """
             <div class='fixed-header'>
@@ -204,17 +203,16 @@ def add_header():
 ######################################################################
 # NOTE TAKING FUNCTIONS & EXPORTING NOTES, SUMMARY, AND CHAT TO PDF
 ######################################################################
+
+# Adds in a text area for users to write notes and a button to save them
 def notes_section():
     st.sidebar.markdown("## 📝 Note-Taking")
     
-    # Initialize session state for notes if it doesn't exist
     if "notes" not in st.session_state:
         st.session_state.notes = []
 
-    # Text input for writing a new note
     new_note = st.sidebar.text_area("Add a new note:", key="note_input")
     
-    # Button to save the new note
     if st.sidebar.button("Save Note"):
         if new_note:
             st.session_state.notes.append(new_note)
@@ -222,20 +220,19 @@ def notes_section():
         else:
             st.sidebar.warning("Please enter a note before saving.")
     
-    # Adds a button to export notes as a PDF
     if st.sidebar.button("Export Notes as PDF"):
         if st.session_state.notes:
             export_notes_to_pdf()
         else:
             st.sidebar.warning("No notes to export.")
 
+# Handles exporting any note the user saved to a PDF
 def export_notes_to_pdf():
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # Adds the content to the PDF
     pdf.cell(200, 10, txt="Saved Notes", ln=True, align="C")
     pdf.ln(10)  
 
@@ -243,56 +240,50 @@ def export_notes_to_pdf():
         pdf.multi_cell(0, 10, f"Note {idx}:\n{note}")
         pdf.ln(5)  
 
-    # Saves the PDF to a temporary file
     pdf_file = "/tmp/notes.pdf"
     pdf.output(pdf_file)
 
-    # Provides a download link in the sidebar
     with open(pdf_file, "rb") as file:
         b64_pdf = base64.b64encode(file.read()).decode("utf-8")
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">Download Notes as PDF</a>'
         st.sidebar.markdown(href, unsafe_allow_html=True)
 
+# Handles export of the summarized response to a PDF
 def export_summary_to_pdf(summary):
     if not summary:
         st.sidebar.warning("No summary available to export.")
         return
     
-    # Create a PDF instance
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # Add content to the PDF
     pdf.cell(200, 10, txt="Response Summary", ln=True, align="C")
     pdf.ln(10)  
 
     pdf.multi_cell(0, 10, summary)
     pdf.ln(2)  
 
-    # Save the PDF to a temporary file
     pdf_file = "/tmp/response_summary.pdf"
     pdf.output(pdf_file)
 
-    # Provide a download link in the sidebar
     with open(pdf_file, "rb") as file:
         b64_pdf = base64.b64encode(file.read()).decode("utf-8")
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="response_summary.pdf">Download Response Summary as PDF</a>'
         st.sidebar.markdown(href, unsafe_allow_html=True)
 
+# Handles export of the active chat to a PDF 
 def export_chat_to_pdf():
     if "messages" not in st.session_state or not st.session_state.messages:
         st.sidebar.warning("No chat messages to export.")
         return
 
-    # Creates a PDF instance
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # Adds content to the PDF
     pdf.cell(200, 10, txt="Chat Conversation", ln=True, align="C")
     pdf.ln(10)  
 
@@ -310,11 +301,9 @@ def export_chat_to_pdf():
             pdf.multi_cell(0, 10, f"Note {idx}: {note}")
             pdf.ln(2)  
 
-    # Saves the PDF to a temporary file
     pdf_file = "/tmp/chat_conversation.pdf"
     pdf.output(pdf_file)
 
-    # Provides a download link in the sidebar
     with open(pdf_file, "rb") as file:
         b64_pdf = base64.b64encode(file.read()).decode("utf-8")
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="chat_conversation.pdf">Download Chat as PDF</a>'
@@ -400,22 +389,18 @@ def init_messages():
 svc_file_1 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 svc_file_2 = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
 
-
+# Retrieves "similar" chunks, meaning chunks (data) that are related to the query
 def get_similar_chunks_search_service(query):
-    # Fetch the response from both services
     response_file_1 = svc_file_1.search(query, COLUMNS, limit=NUM_CHUNKS)
     response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
-    # Use json.loads to convert the response to a dictionary
     try:
         json_response_1 = json.loads(response_file_1.json())  
         json_response_2 = json.loads(response_file_2.json())  
     except Exception as e:
         st.error(f"Failed to parse JSON response: {e}")
         return {}
-    # Access the 'results' key from the JSON response
     results_1 = json_response_1.get('results', [])
     results_2 = json_response_2.get('results', [])
-    # Combine results from both responses
     combined_response = {
         "results": results_1 + results_2
     }
@@ -449,7 +434,6 @@ def create_prompt(myquestion):
         response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
         response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
 
-    # Parse the response as JSON using json.loads()
     try:
         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])

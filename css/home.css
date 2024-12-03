@@ -15,7 +15,7 @@
 #MainMenu {visibility: hidden;}
 header {visibility: hidden;}
 
-
+/* Styles our custom header (not the actual header tag, but what is displayed in its place) */
 .fixed-header {
     position: fixed;
     top: 0;

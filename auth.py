@@ -3,15 +3,15 @@ import streamlit as st
 import re
 
 
-# Hash the password using bcrypt
+# Hashes stored passwords for security
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# Check if the password matches the hashed password
+# Check if the entered password matches the hashed password
 def check_password(hashed_password, password):
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
-# Function to validate password requirements
+# Function to enforce password requirements
 def validate_password(password):
     if len(password) < 8:
         return "Password must be at least 8 characters long."
@@ -28,9 +28,7 @@ def validate_password(password):
 # Register new user (add username and password to users table in the database)
 def register_user(session, username, password):
     try:
-        # Check if the username already exists in the users table
         existing_user = session.sql(f"SELECT * FROM users WHERE username = '{username}'").collect()
-
         if existing_user:
             st.error('Username already exists. Please choose a different username.')
         else:
@@ -38,7 +36,6 @@ def register_user(session, username, password):
             if password_error:
                 st.error(password_error)  
             else:
-            # Hash the password and insert the new user
                 hashed_password = hash_password(password)
                 sql_query = f"INSERT INTO users (username, password_hash) VALUES ('{username}', '{hashed_password}')"
                 session.sql(sql_query).collect()  
@@ -52,7 +49,6 @@ def register_user(session, username, password):
     except Exception as e:
         st.error(f"Error registering user: {e}")
     return None
-
 
 # Login user by checking username and password against the database
 def login_user(session, username, password):
