@@ -417,8 +417,7 @@ def summarize_question_with_history(chat_history, question):
 <chat_history>{chat_history}</chat_history>
 <question>{question}</question>
 """    
-    # summary = Complete(st.session_state.model_name, prompt, session=session)
-    summary = Complete(st.session_state.model_name, prompt)
+    summary = Complete(st.session_state.model_name, prompt, session=session)
 
     return summary.replace("'", "")
 
@@ -530,8 +529,7 @@ def summarize_response(response):
 
     Key Insights (Limit to 3):
     """
-    # summary = Complete(st.session_state.model_name, prompt, session=session)
-    summary = Complete(st.session_state.model_name, prompt)
+    summary = Complete(st.session_state.model_name, prompt, session=session)
 
     return summary
 
@@ -539,8 +537,7 @@ def summarize_response(response):
 # Answers the prompt using the model
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
-    # response = Complete(st.session_state.model_name, prompt, session=session) 
-    response = Complete(st.session_state.model_name, prompt) 
+    response = Complete(st.session_state.model_name, prompt, session=session) 
     cleaned_response = clean_response(response)
     summary = summarize_response(cleaned_response)
     st.text(cleaned_response)
