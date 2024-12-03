@@ -4,7 +4,6 @@
 }
 
 .stSidebar {
-    /* background: linear-gradient(to bottom, #ffffff, #ffffff, #ffffff); */
     background: #d5d5d5;
     color: rgb(0, 0, 0);
 }
@@ -15,9 +14,6 @@
 
 #MainMenu {visibility: hidden;}
 header {visibility: hidden;}
-
-/* TODO: Remove comment before demo */ 
-/* footer {visibility: hidden;} */
 
 
 .fixed-header {
@@ -75,14 +71,12 @@ header {visibility: hidden;}
 }
 
 /* Chat container styling */
-
 .st-chat-container {
     margin: 20px 0;
     padding: 10px;
 }
 
 /* Chat message bubbles */
-
 .st-chat-message {
     margin: 10px 0;
     padding: 15px;
@@ -93,15 +87,14 @@ header {visibility: hidden;}
 }
 
 /* User messages: Right-aligned with a grey background */
-
 .st-chat-message.user {
     background-color: #f0f0f0;
     color: black;
     text-align: right;
     margin-left: auto;
-    margin-right: 80px;  /* Indent to the right */
+    margin-right: 80px;  
     border-radius: 15px 15px 0 15px;
-    padding-left: 15px; /* Optional left padding */
+    padding-left: 15px; 
 }
 
 /* Makes model response text black */
@@ -110,24 +103,21 @@ header {visibility: hidden;}
 }
 
 /* Assistant messages: Left-aligned with a red background */
-
 .st-chat-message.assistant {
     background-color: #ff4d4d;
     color: rgb(0, 0, 0);
     text-align: left;
     margin-right: auto;
-    margin-left: 20px; /* Indent to the left */
+    margin-left: 20px; 
     border-radius: 15px 0 15px 15px;
 }
 
-/* Chat bubbles smooth hover effect */
-
+/* Adds hover effect to chat bubbles (lighter color when hovering with cursor) */
 .st-chat-message:hover {
     background-color: #ffe6e6;
 }
 
 /* Input box styling */
-
 .st-chat-input input {
     padding: 10px;
     border-radius: 10px;
@@ -135,8 +125,7 @@ header {visibility: hidden;}
     font-size: 16px;
 }
 
-/* Button styling (similar to ChatGPT style) */
-
+/* Button styling  */
 .stButton > button {
     background-color: #BA0144;;
     border: none;
@@ -151,7 +140,6 @@ header {visibility: hidden;}
 }
 
 /* Button hover effect - remove the blue color */
-
 .stButton > button:hover {
     background-color: #cc0000;
     box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
@@ -159,25 +147,21 @@ header {visibility: hidden;}
 }
 
 /* Remove default blue hover focus outline */
-
 .stButton > button:focus {
     outline: none;
 }
 
 /* Sidebar header */
-
 .st-sidebar h2 {
     color: #ff0000;
 }
 
 /* Sidebar container width */
-
 .css-1d391kg {
     width: 350px;
 }
 
 /* Adjusting padding and spacing for better alignment */
-
 .st-chat-input {
     margin-top: 20px;
     margin-bottom: 30px;
@@ -187,7 +171,7 @@ header {visibility: hidden;}
     padding: 0 20px;
 }
 
-/* Custom styles for the welcome message */
+/* Style the welcome message */
 .welcome-container {
     display: flex;
     flex-direction: column;

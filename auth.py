@@ -3,11 +3,11 @@ import streamlit as st
 import re
 
 
-# Use bcrypt to hash passwords
+# Hash the password using bcrypt
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-# Use bcrypt to check passwords
+# Check if the password matches the hashed password
 def check_password(hashed_password, password):
     return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
 
@@ -23,12 +23,10 @@ def validate_password(password):
         return "Password must contain at least one digit."
     if not re.search("[!@#$%^&*(),.?\":{}|<>]", password):
         return "Password must contain at least one special character."
-    return None  # If all checks pass, return None
+    return None  
 
 # Register new user (add username and password to users table in the database)
 def register_user(session, username, password):
-
-
     try:
         # Check if the username already exists in the users table
         existing_user = session.sql(f"SELECT * FROM users WHERE username = '{username}'").collect()
@@ -54,8 +52,6 @@ def register_user(session, username, password):
     except Exception as e:
         st.error(f"Error registering user: {e}")
     return None
-
-
 
 
 # Login user by checking username and password against the database

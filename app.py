@@ -70,7 +70,7 @@ MODEL_DESCRIPTIONS = {
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
-    # Fetching Snowflake credentials from Streamlit secrets
+    # Fetches Snowflake credentials from Streamlit secrets
     connection_parameters = {
         "account": st.secrets["snowflake"]["account"],
         "user": st.secrets["snowflake"]["user"],
@@ -81,7 +81,7 @@ def create_snowflake_session():
         "role": st.secrets.get("snowflake", {}).get("role", None),
         "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
     }
-    # Creating Snowpark session
+    # Creates Snowpark session
     session = Session.builder.configs(connection_parameters).create()
     return session
 
@@ -99,7 +99,7 @@ if 'root' not in st.session_state:
 svc = st.session_state['svc']
 
 
-# Ensure the session is using the correct database and schema
+# Ensures the session is using the correct database and schema
 session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
 session.sql("USE SCHEMA DATA").collect()
 
@@ -147,7 +147,6 @@ def run_sql_file(session, file_path):
             sql = sql.strip()  
             if sql: 
                 session.sql(sql).collect() 
-        # st.success(f"SQL file {file_path} executed successfully.")
     except FileNotFoundError:
         st.error(f"SQL file {file_path} not found.")
     except Exception as e:
@@ -157,7 +156,7 @@ def run_sql_file(session, file_path):
 # HEADER & STYLE SHEET LOADING
 ######################################################################
 
-# Load custom styles and logo
+# Loads custom styles and logo
 def load_custom_styles():
     try:
         with open('css/home.css') as f:
@@ -165,6 +164,7 @@ def load_custom_styles():
     except FileNotFoundError:
         st.write("CSS file not found.")
 
+# Adds in our custom header with the logo, app name/title and logout button
 def add_header():
     if st.session_state['logged_in']:
         # Display the header with the logout button
@@ -222,7 +222,7 @@ def notes_section():
         else:
             st.sidebar.warning("Please enter a note before saving.")
     
-    # Add a button to export notes as a PDF
+    # Adds a button to export notes as a PDF
     if st.sidebar.button("Export Notes as PDF"):
         if st.session_state.notes:
             export_notes_to_pdf()
@@ -235,19 +235,19 @@ def export_notes_to_pdf():
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # Add content to the PDF
+    # Adds the content to the PDF
     pdf.cell(200, 10, txt="Saved Notes", ln=True, align="C")
-    pdf.ln(10)  # Add a line break
+    pdf.ln(10)  
 
     for idx, note in enumerate(st.session_state.notes, start=1):
         pdf.multi_cell(0, 10, f"Note {idx}:\n{note}")
-        pdf.ln(5)  # Add space between notes
+        pdf.ln(5)  
 
-    # Save the PDF to a temporary file
+    # Saves the PDF to a temporary file
     pdf_file = "/tmp/notes.pdf"
     pdf.output(pdf_file)
 
-    # Provide a download link in the sidebar
+    # Provides a download link in the sidebar
     with open(pdf_file, "rb") as file:
         b64_pdf = base64.b64encode(file.read()).decode("utf-8")
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="notes.pdf">Download Notes as PDF</a>'
@@ -266,10 +266,10 @@ def export_summary_to_pdf(summary):
 
     # Add content to the PDF
     pdf.cell(200, 10, txt="Response Summary", ln=True, align="C")
-    pdf.ln(10)  # Add a line break
+    pdf.ln(10)  
 
     pdf.multi_cell(0, 10, summary)
-    pdf.ln(2)  # Add a small space between lines
+    pdf.ln(2)  
 
     # Save the PDF to a temporary file
     pdf_file = "/tmp/response_summary.pdf"
@@ -286,35 +286,35 @@ def export_chat_to_pdf():
         st.sidebar.warning("No chat messages to export.")
         return
 
-    # Create a PDF instance
+    # Creates a PDF instance
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_font("Arial", size=12)
 
-    # Add content to the PDF
+    # Adds content to the PDF
     pdf.cell(200, 10, txt="Chat Conversation", ln=True, align="C")
-    pdf.ln(10)  # Add a line break
+    pdf.ln(10)  
 
     for message in st.session_state.messages:
         role = "User" if message["role"] == "user" else "Assistant"
         pdf.multi_cell(0, 10, f"{role}: {message['content']}")
-        pdf.ln(2)  # Add a small space between messages
+        pdf.ln(2)  
 
     if "notes" in st.session_state and st.session_state.notes:
-        pdf.add_page()  # Add a new page for notes
+        pdf.add_page()  
         pdf.cell(200, 10, txt="Saved Notes", ln=True, align="C")
-        pdf.ln(10)  # Add a line break
+        pdf.ln(10)  
 
         for idx, note in enumerate(st.session_state.notes, start=1):
             pdf.multi_cell(0, 10, f"Note {idx}: {note}")
-            pdf.ln(2)  # Add a small space between notes
+            pdf.ln(2)  
 
-    # Save the PDF to a temporary file
+    # Saves the PDF to a temporary file
     pdf_file = "/tmp/chat_conversation.pdf"
     pdf.output(pdf_file)
 
-    # Provide a download link in the sidebar
+    # Provides a download link in the sidebar
     with open(pdf_file, "rb") as file:
         b64_pdf = base64.b64encode(file.read()).decode("utf-8")
         href = f'<a href="data:application/octet-stream;base64,{b64_pdf}" download="chat_conversation.pdf">Download Chat as PDF</a>'
@@ -334,7 +334,6 @@ def display_model_documentation():
         st.markdown("---")  
 
 def config_options():
-    
     # Sidebar dropdown for model selection
     selected_model = st.sidebar.selectbox(
         'Select your model:', 
@@ -348,9 +347,7 @@ def config_options():
 
     categories = session.table('docs_chunks_table').select('category').distinct().collect()
     cat_list = ['ALL'] + [cat.CATEGORY for cat in categories]
-    # st.sidebar.selectbox('Select product category', cat_list, key="category_value")
     st.sidebar.checkbox('Remember chat history?', key="use_chat_history", value=True)
-    # st.sidebar.checkbox('Show debug info', key="debug", value=True)
     st.sidebar.button("Start Over", key="clear_conversation", on_click=start_over)
 
     if st.session_state.get('logged_in'):
@@ -378,7 +375,6 @@ def config_options():
                 )
                 if (selected_past_prompt and selected_past_prompt != 'Select a prompt' and
                     selected_past_prompt != st.session_state['last_processed_prompt']):
-                    # Process the prompt
                     st.session_state.messages.append({"role": "user", "content": selected_past_prompt})
                     answer, summary, _ = answer_question(selected_past_prompt)
                     with st.chat_message("user"):
@@ -388,8 +384,6 @@ def config_options():
                     st.session_state.messages.append({"role": "assistant", "content": answer})
                     st.session_state.summary = summary
                     st.session_state.show_recommendations = False
-
-                    # Update the last processed prompt
                     st.session_state['last_processed_prompt'] = selected_past_prompt
 
                     st.rerun()
@@ -413,8 +407,8 @@ def get_similar_chunks_search_service(query):
     response_file_2 = svc_file_2.search(query, COLUMNS, limit=NUM_CHUNKS)
     # Use json.loads to convert the response to a dictionary
     try:
-        json_response_1 = json.loads(response_file_1.json())  # Parse the JSON string
-        json_response_2 = json.loads(response_file_2.json())  # Parse the JSON string
+        json_response_1 = json.loads(response_file_1.json())  
+        json_response_2 = json.loads(response_file_2.json())  
     except Exception as e:
         st.error(f"Failed to parse JSON response: {e}")
         return {}
@@ -465,7 +459,6 @@ def create_prompt(myquestion):
         prompt_context_1 = []
         prompt_context_2 = []
  
-    # Combine results with clear distinction in the prompt
     prompt = prompt = f""" 
         As an expert financial analyst, provide a detailed analysis of the financial statements (10Q, 10K) of WK Kellogg Co and General Mills from 2019-2024. Focus on these aspects:
         1. Revenue Trends (Provide a table)- Talk about the sales figures, the products sold and the countries/regions the products are sold in
@@ -522,7 +515,6 @@ def save_prompt_to_database(session, user_id, prompt_text):
     if user_id is None or not prompt_text:
         raise ValueError("User ID and prompt text must not be NULL or empty")
 
-    # Insert data into the table using the insert method
     sql_query = f"INSERT INTO user_prompts (user_id, prompt_text) VALUES ('{user_id}', '{prompt_text}')"
 
     session.sql(sql_query).collect()  
@@ -556,9 +548,8 @@ def summarize_response(response):
     return summary
 
 
-# Answer the question using the assistant
+# Answers the prompt using the model
 def answer_question(myquestion):
-    
     prompt, relative_paths = create_prompt(myquestion)
     response = Complete(st.session_state.model_name, prompt, session=session) 
     cleaned_response = clean_response(response)
@@ -566,7 +557,7 @@ def answer_question(myquestion):
     st.text(cleaned_response)
     return cleaned_response, summary, relative_paths
 
-# Get chat history
+# Gets chat history from the last 7 messages (the slide window size) to use for context
 def get_chat_history():
     chat_history = []
     start_index = max(0, len(st.session_state.messages) - SLIDE_WINDOW)
@@ -680,7 +671,6 @@ def main():
         st.warning("Please login to access the app.")
 
 
-# Run the app
 if __name__ == "__main__":
     load_custom_styles()
     add_header()
