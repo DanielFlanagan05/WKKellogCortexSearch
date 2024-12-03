@@ -21,8 +21,8 @@ from auth import login_user, register_user
 pd.set_option("max_colwidth", None)
 
 ### Default Values
-NUM_CHUNKS = 3  # Num-chunks provided as context. Play with this to check how it affects your accuracy
-SLIDE_WINDOW = 7  # how many last conversations to remember. This is the slide window.
+NUM_CHUNKS = 3  
+SLIDE_WINDOW = 7  
 
 # Service parameters
 CORTEX_SEARCH_DATABASE = "CC_QUICKSTART_CORTEX_SEARCH_DOCS"
@@ -386,10 +386,14 @@ def config_options():
                     with st.chat_message("assistant"):
                         st.markdown(answer)
                     st.session_state.messages.append({"role": "assistant", "content": answer})
+                    st.session_state.summary = summary
                     st.session_state.show_recommendations = False
 
                     # Update the last processed prompt
                     st.session_state['last_processed_prompt'] = selected_past_prompt
+
+                    st.rerun()
+
 
 
 def init_messages():
