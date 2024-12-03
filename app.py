@@ -83,8 +83,7 @@ def create_snowflake_session():
     }
     # Creates Snowpark session
     session = Session.builder.configs(connection_parameters).create()
-    # current_role = session.sql("SELECT CURRENT_ROLE();").collect()
-    # st.write(f"Current role: {current_role[0]['CURRENT_ROLE']}")
+
     return session
 
 # Ensures only one session is created and used
@@ -105,8 +104,6 @@ svc = st.session_state['svc']
 session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
 session.sql("USE SCHEMA DATA").collect()
 
-current_role = session.sql("SELECT CURRENT_ROLE();").collect()
-st.write("Current role query result:", current_role)
 
 ######################################################################
 # Login Related 
@@ -420,7 +417,9 @@ def summarize_question_with_history(chat_history, question):
 <chat_history>{chat_history}</chat_history>
 <question>{question}</question>
 """    
-    summary = Complete(st.session_state.model_name, prompt, session=session)
+    # summary = Complete(st.session_state.model_name, prompt, session=session)
+    summary = Complete(st.session_state.model_name, prompt)
+
     return summary.replace("'", "")
 
 def create_prompt(myquestion):
@@ -531,14 +530,17 @@ def summarize_response(response):
 
     Key Insights (Limit to 3):
     """
-    summary = Complete(st.session_state.model_name, prompt, session=session)
+    # summary = Complete(st.session_state.model_name, prompt, session=session)
+    summary = Complete(st.session_state.model_name, prompt)
+
     return summary
 
 
 # Answers the prompt using the model
 def answer_question(myquestion):
     prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt, session=session) 
+    # response = Complete(st.session_state.model_name, prompt, session=session) 
+    response = Complete(st.session_state.model_name, prompt) 
     cleaned_response = clean_response(response)
     summary = summarize_response(cleaned_response)
     st.text(cleaned_response)
