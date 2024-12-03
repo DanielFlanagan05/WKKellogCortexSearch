@@ -106,7 +106,7 @@ session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
 session.sql("USE SCHEMA DATA").collect()
 
 current_role = session.sql("SELECT CURRENT_ROLE();").collect()
-st.write(f"Current role: {current_role[0]['CURRENT_ROLE']}")
+st.write("Current role query result:", current_role)
 
 ######################################################################
 # Login Related 
