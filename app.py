@@ -83,7 +83,6 @@ def create_snowflake_session():
     }
     # Creates Snowpark session
     session = Session.builder.configs(connection_parameters).create()
-
     return session
 
 # Ensures only one session is created and used
@@ -103,7 +102,6 @@ svc = st.session_state['svc']
 # Ensures the session is using the correct database and schema
 session.sql("USE DATABASE CC_QUICKSTART_CORTEX_SEARCH_DOCS").collect()
 session.sql("USE SCHEMA DATA").collect()
-
 
 ######################################################################
 # Login Related 
@@ -409,18 +407,6 @@ def get_similar_chunks_search_service(query):
 
 
 # Summarize chat history with the current question
-# def summarize_question_with_history(chat_history, question):
-#     prompt = f"""
-#         Based on the chat history below and the question, generate a query that extends the question
-#         with the chat history provided. The query should be in natural language. 
-#         Answer with only the query.
-# <chat_history>{chat_history}</chat_history>
-# <question>{question}</question>
-# """    
-#     summary = Complete(st.session_state.model_name, prompt, session=session)
-
-#     return summary.replace("'", "")
-
 def summarize_question_with_history(chat_history, question):
     prompt = f"""
         Based on the chat history below and the question, generate a query that extends the question
@@ -429,63 +415,29 @@ def summarize_question_with_history(chat_history, question):
 <chat_history>{chat_history}</chat_history>
 <question>{question}</question>
 """    
-    try:
-        st.write("Debug: Calling Complete with prompt for summarizing question with history.")
-        st.write(f"Debug Prompt: {prompt}")
-        session.use()
-        summary = Complete(st.session_state.model_name, prompt)
-        st.write(f"Debug: Summary response: {summary}")
-    except Exception as e:
-        st.error(f"Error in summarize_question_with_history: {e}")
-        st.write("Debug: Failed to get a summary.")
-        raise e  # Re-raise the exception for further handling
+    summary = Complete(st.session_state.model_name, prompt, session=session)
     return summary.replace("'", "")
 
-# def create_prompt(myquestion):
-#     if st.session_state.use_chat_history:
-#         chat_history = get_chat_history()
-#         if chat_history:
-#             question_summary = summarize_question_with_history(chat_history, myquestion)
-#             response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-#             response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-#         else:
-#             response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-#             response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-#     else:
-#         response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-#         response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-
-#     try:
-#         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
-#         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
-
-#     except Exception as e:
-#         st.error(f"Error parsing search response JSON: {e}")
-#         prompt_context_1 = []
-#         prompt_context_2 = []
-
 def create_prompt(myquestion):
-    try:
-        if st.session_state.use_chat_history:
-            chat_history = get_chat_history()
-            if chat_history:
-                st.write("Debug: Using chat history for prompt creation.")
-                question_summary = summarize_question_with_history(chat_history, myquestion)
-                response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-                response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-            else:
-                response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-                response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+    if st.session_state.use_chat_history:
+        chat_history = get_chat_history()
+        if chat_history:
+            question_summary = summarize_question_with_history(chat_history, myquestion)
+            response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+            response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
         else:
             response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
             response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-        
+    else:
+        response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+        response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+
+    try:
         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
-        st.write("Debug: Successfully created prompt contexts.")
+
     except Exception as e:
-        st.error(f"Error in create_prompt: {e}")
-        st.write("Debug: Failed to parse prompt contexts.")
+        st.error(f"Error parsing search response JSON: {e}")
         prompt_context_1 = []
         prompt_context_2 = []
  
@@ -574,42 +526,18 @@ def summarize_response(response):
 
     Key Insights (Limit to 3):
     """
-    session.use()
-    summary = Complete(st.session_state.model_name, prompt)
-
+    summary = Complete(st.session_state.model_name, prompt, session=session)
     return summary
 
 
 # Answers the prompt using the model
-# def answer_question(myquestion):
-#     prompt, relative_paths = create_prompt(myquestion)
-#     response = Complete(st.session_state.model_name, prompt, session=session) 
-#     cleaned_response = clean_response(response)
-#     summary = summarize_response(cleaned_response)
-#     st.text(cleaned_response)
-#     return cleaned_response, summary, relative_paths
 def answer_question(myquestion):
-    try:
-        st.write("Debug: Creating prompt for the question.")
-        prompt, relative_paths = create_prompt(myquestion)
-        st.write(f"Debug: Generated Prompt: {prompt}")
-        
-        st.write("Debug: Calling Complete function.")
-        session.use()
-        response = Complete(st.session_state.model_name, prompt)
-        st.write(f"Debug: Raw Response: {response}")
-        
-        cleaned_response = clean_response(response)
-        summary = summarize_response(cleaned_response)
-        st.write(f"Debug: Cleaned Response: {cleaned_response}")
-        st.write(f"Debug: Summary: {summary}")
-        
-        return cleaned_response, summary, relative_paths
-    except Exception as e:
-        st.error(f"Error in answer_question: {e}")
-        st.write("Debug: An error occurred while answering the question.")
-        raise e  # Re-raise to ensure the error is not swallowed
-
+    prompt, relative_paths = create_prompt(myquestion)
+    response = Complete(st.session_state.model_name, prompt, session=session) 
+    cleaned_response = clean_response(response)
+    summary = summarize_response(cleaned_response)
+    st.text(cleaned_response)
+    return cleaned_response, summary, relative_paths
 
 # Gets chat history from the last 7 messages (the slide window size) to use for context
 def get_chat_history():
