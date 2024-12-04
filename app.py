@@ -432,7 +432,8 @@ def summarize_question_with_history(chat_history, question):
     try:
         st.write("Debug: Calling Complete with prompt for summarizing question with history.")
         st.write(f"Debug Prompt: {prompt}")
-        summary = Complete(st.session_state.model_name, prompt, session=session)
+        session.use()
+        summary = Complete(st.session_state.model_name, prompt)
         st.write(f"Debug: Summary response: {summary}")
     except Exception as e:
         st.error(f"Error in summarize_question_with_history: {e}")
@@ -573,7 +574,8 @@ def summarize_response(response):
 
     Key Insights (Limit to 3):
     """
-    summary = Complete(st.session_state.model_name, prompt, session=session)
+    session.use()
+    summary = Complete(st.session_state.model_name, prompt)
 
     return summary
 
@@ -593,7 +595,8 @@ def answer_question(myquestion):
         st.write(f"Debug: Generated Prompt: {prompt}")
         
         st.write("Debug: Calling Complete function.")
-        response = Complete(st.session_state.model_name, prompt, session=session)
+        session.use()
+        response = Complete(st.session_state.model_name, prompt)
         st.write(f"Debug: Raw Response: {response}")
         
         cleaned_response = clean_response(response)
