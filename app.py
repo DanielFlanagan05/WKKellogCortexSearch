@@ -682,6 +682,18 @@ def main():
         # Reset recommendations when "Start Over" button is clicked
         if st.button("Start Over"):
             start_over()
+
+        test_model = "llama2-70b-chat"  # Replace with a valid model name
+        test_prompt = "What are the revenue trends for WK Kellogg Co in 2023?"
+
+        response = Complete(
+            model=test_model,
+            prompt=test_prompt,
+            session=session,
+            stream=False
+        )
+        print(response)
+        
     else:
         display_login_register()
         st.warning("Please login to access the app.")
