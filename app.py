@@ -67,6 +67,11 @@ MODEL_DESCRIPTIONS = {
     'gemma-7b': "Gemma-7b is fine-tuned for creative tasks like writing, generating ideas, and crafting compelling stories or articles. It's ideal for content marketers and creative professionals."
 }
 
+def debug_log(message):
+    if "debug_logs" not in st.session_state:
+        st.session_state["debug_logs"] = []
+    st.session_state["debug_logs"].append(message)
+    st.sidebar.text_area("Debug Logs", value="\n".join(st.session_state["debug_logs"]), height=200)
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
@@ -316,11 +321,7 @@ def export_chat_to_pdf():
 
 ### Functions
 
-def debug_log(message):
-    if "debug_logs" not in st.session_state:
-        st.session_state["debug_logs"] = []
-    st.session_state["debug_logs"].append(message)
-    st.sidebar.text_area("Debug Logs", value="\n".join(st.session_state["debug_logs"]), height=200)
+
 
 
 def display_model_documentation():
@@ -588,7 +589,7 @@ def start_over():
 st.sidebar.markdown("### Debugging Logs")
 if "debug_logs" in st.session_state:
     st.sidebar.text_area("Logs", "\n".join(st.session_state["debug_logs"]), height=200)
-    
+
 def main():
     if st.session_state['logged_in']:
         # Checks for reset flag in session state
