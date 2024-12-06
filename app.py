@@ -70,20 +70,25 @@ MODEL_DESCRIPTIONS = {
 
 # --- Snowflake connection setup ---
 def create_snowflake_session():
-    # Fetches Snowflake credentials from Streamlit secrets
-    connection_parameters = {
-        "account": st.secrets["snowflake"]["account"],
-        "user": st.secrets["snowflake"]["user"],
-        "password": st.secrets["snowflake"]["password"],
-        "authenticator": st.secrets["snowflake"]["authenticator"],
-        "database": "CC_QUICKSTART_CORTEX_SEARCH_DOCS",
-        "schema": "DATA",
-        "role": st.secrets.get("snowflake", {}).get("role", None),
-        "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
-    }
-    # Creates Snowpark session
-    session = Session.builder.configs(connection_parameters).create()
-    return session
+    debug_log("Creating Snowflake session...")
+    try:
+        connection_parameters = {
+            "account": st.secrets["snowflake"]["account"],
+            "user": st.secrets["snowflake"]["user"],
+            "password": st.secrets["snowflake"]["password"],
+            "authenticator": st.secrets["snowflake"]["authenticator"],
+            "database": "CC_QUICKSTART_CORTEX_SEARCH_DOCS",
+            "schema": "DATA",
+            "role": st.secrets.get("snowflake", {}).get("role", None),
+            "warehouse": st.secrets.get("snowflake", {}).get("warehouse", None),
+        }
+        session = Session.builder.configs(connection_parameters).create()
+        debug_log("Snowflake session created successfully.")
+        return session
+    except Exception as e:
+        debug_log(f"Failed to create Snowflake session: {e}")
+        st.error(f"Error: Could not create Snowflake session. {e}")
+        raise
 
 # Ensures only one session is created and used
 if 'session' not in st.session_state:
@@ -311,6 +316,13 @@ def export_chat_to_pdf():
 
 ### Functions
 
+def debug_log(message):
+    if "debug_logs" not in st.session_state:
+        st.session_state["debug_logs"] = []
+    st.session_state["debug_logs"].append(message)
+    st.sidebar.text_area("Debug Logs", value="\n".join(st.session_state["debug_logs"]), height=200)
+
+
 def display_model_documentation():
     st.markdown("## 📚 Model Documentation")
     st.markdown("Here are the models available for selection and their descriptions:")
@@ -406,38 +418,48 @@ def get_similar_chunks_search_service(query):
     return json.dumps(combined_response)
 
 
-# Summarize chat history with the current question
+# --- Debugging Cortex Model Usage ---
 def summarize_question_with_history(chat_history, question):
+    debug_log(f"Summarizing question with history. Chat history: {chat_history}, Question: {question}")
     prompt = f"""
         Based on the chat history below and the question, generate a query that extends the question
         with the chat history provided. The query should be in natural language. 
         Answer with only the query.
 <chat_history>{chat_history}</chat_history>
 <question>{question}</question>
-"""    
-    summary = Complete(st.session_state.model_name, prompt, session=session)
-    return summary.replace("'", "")
+"""
+    try:
+        summary = Complete(st.session_state.model_name, prompt, session=session)
+        debug_log(f"Generated summary: {summary}")
+        return summary.replace("'", "")
+    except Exception as e:
+        debug_log(f"Error in summarizing question with history: {e}")
+        st.error(f"Error: Could not summarize question with history. {e}")
+        raise
 
 def create_prompt(myquestion):
-    if st.session_state.use_chat_history:
-        chat_history = get_chat_history()
-        if chat_history:
-            question_summary = summarize_question_with_history(chat_history, myquestion)
-            response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
-            response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+    debug_log(f"Creating prompt for question: {myquestion}")
+    try:
+        if st.session_state.use_chat_history:
+            chat_history = get_chat_history()
+            debug_log(f"Chat history retrieved: {chat_history}")
+            if chat_history:
+                question_summary = summarize_question_with_history(chat_history, myquestion)
+                response_file_1 = svc_file_1.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+                response_file_2 = svc_file_2.search(question_summary, COLUMNS, limit=NUM_CHUNKS)
+            else:
+                response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
+                response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
         else:
             response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
             response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-    else:
-        response_file_1 = svc_file_1.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
-        response_file_2 = svc_file_2.search(myquestion, COLUMNS, limit=NUM_CHUNKS)
 
-    try:
         prompt_context_1 = json.loads(response_file_1.json()).get('results', [])
         prompt_context_2 = json.loads(response_file_2.json()).get('results', [])
-
+        debug_log(f"Prompt contexts retrieved: {prompt_context_1}, {prompt_context_2}")
     except Exception as e:
-        st.error(f"Error parsing search response JSON: {e}")
+        debug_log(f"Error in creating prompt: {e}")
+        st.error(f"Error: Could not create prompt. {e}")
         prompt_context_1 = []
         prompt_context_2 = []
  
@@ -489,6 +511,8 @@ def create_prompt(myquestion):
         
         Answer:
         """
+    debug_log(f"Generated prompt: {prompt}")
+
     return prompt, [prompt_context_1, prompt_context_2]
 
 
@@ -532,12 +556,18 @@ def summarize_response(response):
 
 # Answers the prompt using the model
 def answer_question(myquestion):
-    prompt, relative_paths = create_prompt(myquestion)
-    response = Complete(st.session_state.model_name, prompt, session=session) 
-    cleaned_response = clean_response(response)
-    summary = summarize_response(cleaned_response)
-    st.text(cleaned_response)
-    return cleaned_response, summary, relative_paths
+    debug_log(f"Answering question: {myquestion}")
+    try:
+        prompt, relative_paths = create_prompt(myquestion)
+        response = Complete(st.session_state.model_name, prompt, session=session)
+        cleaned_response = clean_response(response)
+        debug_log(f"Response: {cleaned_response}")
+        summary = summarize_response(cleaned_response)
+        return cleaned_response, summary, relative_paths
+    except Exception as e:
+        debug_log(f"Error in answering question: {e}")
+        st.error(f"Error: Could not answer question. {e}")
+        raise
 
 # Gets chat history from the last 7 messages (the slide window size) to use for context
 def get_chat_history():
@@ -555,7 +585,10 @@ def start_over():
     st.session_state['last_processed_prompt'] = None
     st.rerun()
 
-
+st.sidebar.markdown("### Debugging Logs")
+if "debug_logs" in st.session_state:
+    st.sidebar.text_area("Logs", "\n".join(st.session_state["debug_logs"]), height=200)
+    
 def main():
     if st.session_state['logged_in']:
         # Checks for reset flag in session state
