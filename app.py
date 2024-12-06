@@ -683,7 +683,7 @@ def main():
         if st.button("Start Over"):
             start_over()
 
-        test_model = "llama2-70b-chat"  # Replace with a valid model name
+        test_model = "mixtral-8x7b"  # Replace with a valid model name
         test_prompt = "What are the revenue trends for WK Kellogg Co in 2023?"
 
         response = Complete(
