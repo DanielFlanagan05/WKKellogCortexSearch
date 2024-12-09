@@ -344,7 +344,7 @@ def config_options():
                 .filter(f"user_id = {user_id}") \
                 .select('prompt_text', 'id') \
                 .order_by('id', ascending=False) \
-                .limit(10) \
+                .limit(20) \
                 .collect()
             past_prompts = [row['PROMPT_TEXT'][:100] for row in past_prompts_df]
 
